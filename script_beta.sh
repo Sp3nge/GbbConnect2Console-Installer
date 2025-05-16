@@ -174,7 +174,7 @@ declare -A S_ATTEMPTING_DOWNLOAD_FROM
 S_ATTEMPTING_DOWNLOAD_FROM[en]="Attempting to download from: %s" # %s is PACKAGE_URL
 S_ATTEMPTING_DOWNLOAD_FROM[pl]="Próba pobrania z: %s"
 declare -A S_DOTNET_INSTALL_COMPLETE
-S_DOTNET_INSTALL_COMPLETE[en]=".NET SDK %s installation process completed." # %s is DEFAULT_DOTNET_SDK_VERSION
+S_DOTNET_INSTALL_COMPLETE[en]=".NET SDK %s installation process completed." # %s is DEFAULT_DOTNET_SDK_VERSION or actual installed
 S_DOTNET_INSTALL_COMPLETE[pl]="Proces instalacji .NET SDK %s zakończony."
 declare -A S_DOTNET_VERIFYING_INSTALL
 S_DOTNET_VERIFYING_INSTALL[en]="Verifying .NET SDK installation..."
@@ -197,6 +197,38 @@ S_DOTNET_SKIPPING_UPDATE[pl]="Pominięcie instalacji/aktualizacji .NET SDK."
 declare -A S_PREREQ_SKIPPING_ALL
 S_PREREQ_SKIPPING_ALL[en]="Skipping prerequisite installation. Please ensure Git, lsb-release, rsync, and .NET SDK %s are installed." # %s is DEFAULT_DOTNET_SDK_VERSION
 S_PREREQ_SKIPPING_ALL[pl]="Pominięcie instalacji wymagań wstępnych. Upewnij się, że Git, lsb-release, rsync oraz .NET SDK %s są zainstalowane."
+
+declare -A S_UBUNTU_2004_EOL_WARNING
+S_UBUNTU_2004_EOL_WARNING[en]="WARNING: Ubuntu 20.04 reaches its standard end-of-life in April 2025. Microsoft has stated that .NET 9 will NOT be supported on Ubuntu 20.04. You should upgrade your OS to a supported version (e.g., Ubuntu 22.04 or 24.04) to use .NET 9 and receive security updates."
+S_UBUNTU_2004_EOL_WARNING[pl]="OSTRZEŻENIE: Standardowe wsparcie dla Ubuntu 20.04 kończy się w kwietniu 2025. Microsoft ogłosił, że .NET 9 NIE będzie wspierany na Ubuntu 20.04. Zalecana jest aktualizacja systemu operacyjnego do wspieranej wersji (np. Ubuntu 22.04 lub 24.04), aby móc korzystać z .NET 9 i otrzymywać aktualizacje bezpieczeństwa."
+declare -A S_CONFIRM_DOTNET9_ON_UBUNTU2004
+S_CONFIRM_DOTNET9_ON_UBUNTU2004[en]="Do you wish to attempt installing .NET 9.0 on Ubuntu 20.04 despite the warning (this is unsupported and likely to fail)?"
+S_CONFIRM_DOTNET9_ON_UBUNTU2004[pl]="Czy chcesz spróbować zainstalować .NET 9.0 na Ubuntu 20.04 pomimo ostrzeżenia (jest to niewspierane i prawdopodobnie się nie uda)?"
+declare -A S_SKIPPING_DOTNET9_UBUNTU2004
+S_SKIPPING_DOTNET9_UBUNTU2004[en]="Skipping .NET 9.0 installation due to Ubuntu 20.04 limitations and user choice."
+S_SKIPPING_DOTNET9_UBUNTU2004[pl]="Pominięcie instalacji .NET 9.0 z powodu ograniczeń Ubuntu 20.04 i wyboru użytkownika."
+declare -A S_USING_PPA_FOR_UBUNTU
+S_USING_PPA_FOR_UBUNTU[en]="Using Ubuntu PPA method for .NET SDK installation on Ubuntu %s..." # %s is OS_VERSION_TO_USE
+S_USING_PPA_FOR_UBUNTU[pl]="Używanie metody PPA Ubuntu do instalacji .NET SDK na Ubuntu %s..."
+declare -A S_INSTALLING_SOFTWARE_PROPERTIES
+S_INSTALLING_SOFTWARE_PROPERTIES[en]="Ensuring 'software-properties-common' is installed for PPA support..."
+S_INSTALLING_SOFTWARE_PROPERTIES[pl]="Zapewnianie instalacji 'software-properties-common' dla obsługi PPA..."
+declare -A S_ADDING_PPA_DOTNET_BACKPORTS
+S_ADDING_PPA_DOTNET_BACKPORTS[en]="Adding ppa:dotnet/backports repository..."
+S_ADDING_PPA_DOTNET_BACKPORTS[pl]="Dodawanie repozytorium ppa:dotnet/backports..."
+declare -A S_DOTNET9_PPA_INSTALL_FAILED
+S_DOTNET9_PPA_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from PPA. This might mean it's not yet available in backports for your Ubuntu version, or another issue occurred. Please check .NET 9.0 availability for your OS or try installing it manually." # %s is DEFAULT_DOTNET_SDK_VERSION
+S_DOTNET9_PPA_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z PPA. Może to oznaczać, że nie jest jeszcze dostępny w backports dla Twojej wersji Ubuntu lub wystąpił inny problem. Sprawdź dostępność .NET 9.0 dla swojego systemu lub spróbuj zainstalować ręcznie."
+declare -A S_USING_MS_REPO_METHOD
+S_USING_MS_REPO_METHOD[en]="Using Microsoft package repository method for .NET SDK installation..."
+S_USING_MS_REPO_METHOD[pl]="Używanie metody repozytorium pakietów Microsoft do instalacji .NET SDK..."
+declare -A S_DOTNET9_MSREPO_INSTALL_FAILED
+S_DOTNET9_MSREPO_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from Microsoft repository. Please check .NET 9.0 availability for your OS or try installing it manually." # %s is DEFAULT_DOTNET_SDK_VERSION
+S_DOTNET9_MSREPO_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z repozytorium Microsoft. Sprawdź dostępność .NET 9.0 dla swojego systemu lub spróbuj zainstalować ręcznie."
+declare -A S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT
+S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[en]="dotnet command not found after installation attempt. .NET SDK installation likely failed."
+S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[pl]="Nie znaleziono polecenia dotnet po próbie instalacji. Instalacja .NET SDK prawdopodobnie nie powiodła się."
+
 
 # --- Step 2: Clone ---
 declare -A S_STEP2_TITLE
@@ -515,10 +547,7 @@ echo "---"
 
 # --- 1. Prerequisites ---
 print_info "${S_STEP1_TITLE[$LANG_SELECTED]}"
-PREREQ_CONFIRM_MSG_RAW="${S_CONFIRM_PREREQUISITES[$LANG_SELECTED]} ${DEFAULT_DOTNET_SDK_VERSION}?"
-# Using printf for safer variable expansion in confirm_action
 PREREQ_CONFIRM_MSG=$(printf "%s %s?" "${S_CONFIRM_PREREQUISITES[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
-
 
 if confirm_action "$PREREQ_CONFIRM_MSG"; then
     print_info "${S_UPDATING_PACKAGES[$LANG_SELECTED]}"
@@ -549,7 +578,7 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
     fi
 
     SDK_MAJOR_VERSION=$(echo "$DEFAULT_DOTNET_SDK_VERSION" | cut -d. -f1)
-    INSTALL_DOTNET_SDK=false
+    INSTALL_DOTNET_SDK=false # Default to false, set true if install needed
     
     L_DOTNET_ALREADY_INSTALLED_MSG_FORMATTED=$(printf "${S_DOTNET_ALREADY_INSTALLED_MSG[$LANG_SELECTED]}" "$SDK_MAJOR_VERSION")
     L_DOTNET_NOT_FOUND_MSG_FORMATTED=$(printf "${S_DOTNET_NOT_FOUND_MSG[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
@@ -571,10 +600,8 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
         OS_VERSION_TO_USE=""
         if command -v lsb_release &> /dev/null; then
             OS_VERSION_TO_USE=$(lsb_release -rs)
-        else
-            print_warning "${S_LSB_RELEASE_UNAVAILABLE_MANUAL_PROMPT[$LANG_SELECTED]}"
         fi
-
+        
         if [ -z "$OS_VERSION_TO_USE" ]; then
             if confirm_action "${S_OS_VERSION_AUTO_DETECT_FAIL_PROMPT[$LANG_SELECTED]}"; then
                 read -r -p "${S_OS_VERSION_PROMPT[$LANG_SELECTED]}: " OS_VERSION_MANUAL
@@ -587,58 +614,106 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
                  print_error "${S_ABORT_NO_OS_VERSION[$LANG_SELECTED]}"
             fi
         fi
-        
-            # Determine if it's Debian or Ubuntu to form the URL path correctly
-            OS_TYPE="unknown" # Initialize
+
+        if [ -n "$OS_VERSION_TO_USE" ]; then
+            L_USING_OS_VERSION_FOR_SETUP_FORMATTED=$(printf "${S_USING_OS_VERSION_FOR_SETUP[$LANG_SELECTED]}" "$OS_VERSION_TO_USE")
+            print_info "$L_USING_OS_VERSION_FOR_SETUP_FORMATTED"
+            
+            OS_TYPE="unknown" # Renamed from OS_TYPE_FOR_URL for consistency with user script
             if [ -f /etc/os-release ]; then
-                # Source /etc/os-release to get variables like ID
-                . /etc/os-release
+                . /etc/os-release 
                 if [ "$ID" == "ubuntu" ]; then
                     OS_TYPE="ubuntu"
                 elif [ "$ID" == "debian" ]; then
                     OS_TYPE="debian"
                 fi
             fi
-
-            # Fallback if /etc/os-release didn't give a clear answer
             if [ "$OS_TYPE" == "unknown" ]; then
-                if (grep -qi "ubuntu" /etc/os-release &>/dev/null); then # Case-insensitive grep for Ubuntu
+                if (grep -qi "ubuntu" /etc/os-release &>/dev/null); then
                     OS_TYPE="ubuntu"
-                elif (grep -qi "debian" /etc/os-release &>/dev/null || [ -f /etc/debian_version ]); then # Case-insensitive grep for Debian
+                elif (grep -qi "debian" /etc/os-release &>/dev/null || [ -f /etc/debian_version ]); then
                     OS_TYPE="debian"
                 else
                     L_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN_FORMATTED=$(printf "${S_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN[$LANG_SELECTED]}")
                     print_warning "$L_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN_FORMATTED"
-                    OS_TYPE="debian" # Default assumption if all else fails
+                    OS_TYPE="debian" 
                 fi
             fi
 
-            PACKAGE_URL="https://packages.microsoft.com/config/${OS_TYPE}/${OS_VERSION_TO_USE}/packages-microsoft-prod.deb"
-            L_ATTEMPTING_DOWNLOAD_FROM_FORMATTED=$(printf "${S_ATTEMPTING_DOWNLOAD_FROM[$LANG_SELECTED]}" "$PACKAGE_URL")
-            print_info "$L_ATTEMPTING_DOWNLOAD_FROM_FORMATTED"
+            # --- UBUNTU 20.04 WARNING ---
+            ATTEMPT_DOTNET_INSTALL_FLAG=true # Flag to control actual installation attempt
+            if [ "$OS_TYPE" == "ubuntu" ] && [ "$OS_VERSION_TO_USE" == "20.04" ]; then
+                print_warning "${S_UBUNTU_2004_EOL_WARNING[$LANG_SELECTED]}"
+                if ! confirm_action "${S_CONFIRM_DOTNET9_ON_UBUNTU2004[$LANG_SELECTED]}"; then
+                    print_info "${S_SKIPPING_DOTNET9_UBUNTU2004[$LANG_SELECTED]}"
+                    ATTEMPT_DOTNET_INSTALL_FLAG=false 
+                fi
+            fi
 
-            if wget "$PACKAGE_URL" -O packages-microsoft-prod.deb; then
-                sudo dpkg -i packages-microsoft-prod.deb
-                rm packages-microsoft-prod.deb
-                sudo apt update
-                sudo apt install -y apt-transport-https 
-                sudo apt install -y "dotnet-sdk-${DEFAULT_DOTNET_SDK_VERSION}"
-                L_DOTNET_INSTALL_COMPLETE_FORMATTED=$(printf "${S_DOTNET_INSTALL_COMPLETE[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
-                print_success "$L_DOTNET_INSTALL_COMPLETE_FORMATTED"
+            if [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ]; then
+                # --- UBUNTU SPECIFIC PPA METHOD for 22.04 and 24.04 ---
+                if [ "$OS_TYPE" == "ubuntu" ] && ([ "$OS_VERSION_TO_USE" == "22.04" ] || [ "$OS_VERSION_TO_USE" == "24.04" ]); then
+                    L_USING_PPA_FOR_UBUNTU_FORMATTED=$(printf "${S_USING_PPA_FOR_UBUNTU[$LANG_SELECTED]}" "$OS_VERSION_TO_USE")
+                    print_info "$L_USING_PPA_FOR_UBUNTU_FORMATTED"
+                    print_info "${S_INSTALLING_SOFTWARE_PROPERTIES[$LANG_SELECTED]}"
+                    sudo apt install -y software-properties-common 
+                    print_info "${S_ADDING_PPA_DOTNET_BACKPORTS[$LANG_SELECTED]}"
+                    sudo add-apt-repository -y ppa:dotnet/backports
+                    sudo apt update
+                    if ! sudo apt install -y "dotnet-sdk-${DEFAULT_DOTNET_SDK_VERSION}"; then
+                        L_DOTNET9_PPA_INSTALL_FAILED_FORMATTED=$(printf "${S_DOTNET9_PPA_INSTALL_FAILED[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
+                        print_error "$L_DOTNET9_PPA_INSTALL_FAILED_FORMATTED"
+                    else
+                        L_DOTNET_INSTALL_COMPLETE_FORMATTED=$(printf "${S_DOTNET_INSTALL_COMPLETE[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
+                        print_success "$L_DOTNET_INSTALL_COMPLETE_FORMATTED"
+                    fi
+                # --- DEFAULT MICROSOFT REPO METHOD (for Debian, other Ubuntu versions) ---
+                # Also applies if Ubuntu 20.04 user chose to proceed despite warning
+                elif [ "$OS_TYPE" == "debian" ] || \
+                     ([ "$OS_TYPE" == "ubuntu" ] && ([ "$OS_VERSION_TO_USE" == "20.04" ] || ([ "$OS_VERSION_TO_USE" != "22.04" ] && [ "$OS_VERSION_TO_USE" != "24.04" ]))); then
+                    print_info "${S_USING_MS_REPO_METHOD[$LANG_SELECTED]}"
+                    PACKAGE_URL="https://packages.microsoft.com/config/${OS_TYPE}/${OS_VERSION_TO_USE}/packages-microsoft-prod.deb"
+                    L_ATTEMPTING_DOWNLOAD_FROM_FORMATTED=$(printf "${S_ATTEMPTING_DOWNLOAD_FROM[$LANG_SELECTED]}" "$PACKAGE_URL")
+                    print_info "$L_ATTEMPTING_DOWNLOAD_FROM_FORMATTED"
+
+                    if wget "$PACKAGE_URL" -O packages-microsoft-prod.deb; then
+                        sudo dpkg -i packages-microsoft-prod.deb
+                        rm packages-microsoft-prod.deb
+                        sudo apt update 
+                        sudo apt install -y apt-transport-https 
+                        sudo apt update # Extra update
+                        if ! sudo apt install -y "dotnet-sdk-${DEFAULT_DOTNET_SDK_VERSION}"; then
+                            L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED=$(printf "${S_DOTNET9_MSREPO_INSTALL_FAILED[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
+                            print_error "$L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED"
+                        else
+                            L_DOTNET_INSTALL_COMPLETE_FORMATTED=$(printf "${S_DOTNET_INSTALL_COMPLETE[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
+                            print_success "$L_DOTNET_INSTALL_COMPLETE_FORMATTED"
+                        fi
+                    else
+                        print_error "${S_DOWNLOAD_PKG_FAIL[$LANG_SELECTED]}" 
+                        print_error "${S_DOTNET_SKIPPING_INSTALL[$LANG_SELECTED]}" 
+                    fi
+                else
+                    # This case handles any other OS_TYPE or an Ubuntu version not explicitly listed above for PPA or MS repo.
+                    print_warning "${S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[$LANG_SELECTED]}"
+                fi
+            fi 
+            
+            if command -v dotnet &> /dev/null; then
                 print_info "${S_DOTNET_VERIFYING_INSTALL[$LANG_SELECTED]}"
                 dotnet --version
-            else
-                print_error "${S_DOWNLOAD_PKG_FAIL[$LANG_SELECTED]}"
-                print_error "${S_DOTNET_SKIPPING_INSTALL[$LANG_SELECTED]}"
+            elif [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ]; then 
+                print_error "${S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[$LANG_SELECTED]}"
             fi
-        else # OS_VERSION_TO_USE is still empty after prompts
-            print_error "${S_COULD_NOT_DETERMINE_OS_VERSION_SKIP_DOTNET[$LANG_SELECTED]}"
-            print_error "${S_DOTNET_MANUAL_INSTALL_NOTE[$LANG_SELECTED]}"
+
+        else 
+            print_error "${S_COULD_NOT_DETERMINE_OS_VERSION_SKIP_DOTNET[$LANG_SELECTED]}" 
+            print_error "${S_DOTNET_MANUAL_INSTALL_NOTE[$LANG_SELECTED]}" 
         fi
-    else # INSTALL_DOTNET_SDK is false
-      print_info "${S_DOTNET_SKIPPING_UPDATE[$LANG_SELECTED]}"
+    else 
+      print_info "${S_DOTNET_SKIPPING_UPDATE[$LANG_SELECTED]}" 
     fi
-else # User chose not to install prerequisites
+else 
     L_PREREQ_SKIPPING_ALL_FORMATTED=$(printf "${S_PREREQ_SKIPPING_ALL[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
     print_info "$L_PREREQ_SKIPPING_ALL_FORMATTED"
 fi
@@ -648,7 +723,7 @@ echo "---"
 print_info "${S_STEP2_TITLE[$LANG_SELECTED]}"
 GITHUB_REPO="https://github.com/gbbsoft/GbbConnect2.git" # Hardcoded
 
-L_PROMPT_CLONE_DIR_FORMATTED=$(printf "${S_PROMPT_CLONE_DIR[$LANG_SELECTED]}")
+L_PROMPT_CLONE_DIR_FORMATTED=$(printf "%s" "${S_PROMPT_CLONE_DIR[$LANG_SELECTED]}")
 prompt_with_default "$L_PROMPT_CLONE_DIR_FORMATTED" "$DEFAULT_CLONE_DIR" CLONE_DIR
 
 if [ -d "$CLONE_DIR" ]; then
@@ -729,7 +804,6 @@ if [ -f "$PROGRAM_CS_FILE" ]; then
     if grep -q 'Task.Delay(Timeout.Infinite, cts.Token);.' "$PROGRAM_CS_FILE"; then
         L_PROGRAM_CS_SYNTAX_ERROR_DETECTED_FORMATTED=$(printf "${S_PROGRAM_CS_SYNTAX_ERROR_DETECTED[$LANG_SELECTED]}" "$PROGRAM_CS_FILE")
         print_warning "$L_PROGRAM_CS_SYNTAX_ERROR_DETECTED_FORMATTED"
-        # Using a temporary file for sed in-place editing for safety
         sed 's/Task.Delay(Timeout.Infinite, cts.Token);./Task.Delay(Timeout.Infinite, cts.Token);/g' "$PROGRAM_CS_FILE" > "${PROGRAM_CS_FILE}.tmp" && \
         mv "${PROGRAM_CS_FILE}.tmp" "$PROGRAM_CS_FILE"
         L_PROGRAM_CS_SYNTAX_FIXED_FORMATTED=$(printf "${S_PROGRAM_CS_SYNTAX_FIXED[$LANG_SELECTED]}" "$PROGRAM_CS_FILE")
