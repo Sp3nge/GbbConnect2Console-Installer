@@ -4,6 +4,9 @@ This Bash script automates the installation and configuration of the `GbbConnect
 
 **Made by @Sp3nge**
 
+https://youtu.be/1x1-wjyAsrs
+
+
 ## Table of Contents
 
 *   [English Guide](#english-guide)
