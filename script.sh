@@ -59,37 +59,31 @@ declare -A S_GUIDE_ITEM3
 S_GUIDE_ITEM3[en]="3. Compiling GbbConnect2.Console."
 S_GUIDE_ITEM3[pl]="3. Kompilację GbbConnect2.Console."
 declare -A S_GUIDE_ITEM4
-S_GUIDE_ITEM4[en]="4. Configuring Parameters.xml with your details."
-S_GUIDE_ITEM4[pl]="4. Konfigurację Parameters.xml z Twoimi danymi."
+S_GUIDE_ITEM4[en]="4. Configuring Parameters.xml, backing up old versions, and setting up systemd service." # Updated
+S_GUIDE_ITEM4[pl]="4. Konfigurację Parameters.xml, tworzenie kopii zapasowej starych wersji i ustawianie usługi systemd." # Updated
 declare -A S_GUIDE_ITEM5
-S_GUIDE_ITEM5[en]="5. Setting up a systemd service for auto-start and persistence."
-S_GUIDE_ITEM5[pl]="5. Konfigurację usługi systemd do automatycznego startu i trwałości."
+S_GUIDE_ITEM5[en]="5. Verification and service management." # Updated
+S_GUIDE_ITEM5[pl]="5. Weryfikację i zarządzanie usługą." # Updated
 
 # --- Helper Function Messages ---
 declare -A S_INFO_PREFIX
 S_INFO_PREFIX[en]="[INFO]"
 S_INFO_PREFIX[pl]="[INFO]"
-
 declare -A S_SUCCESS_PREFIX
 S_SUCCESS_PREFIX[en]="[SUCCESS]"
 S_SUCCESS_PREFIX[pl]="[SUKCES]"
-
 declare -A S_WARNING_PREFIX
 S_WARNING_PREFIX[en]="[WARNING]"
 S_WARNING_PREFIX[pl]="[OSTRZEŻENIE]"
-
 declare -A S_ERROR_PREFIX
 S_ERROR_PREFIX[en]="[ERROR]"
 S_ERROR_PREFIX[pl]="[BŁĄD]"
-
 declare -A S_CONFIRM_PROMPT_SUFFIX
 S_CONFIRM_PROMPT_SUFFIX[en]="[y/N]: "
 S_CONFIRM_PROMPT_SUFFIX[pl]="[t/N]: "
-
 declare -A S_INVALID_INPUT_CONFIRM
 S_INVALID_INPUT_CONFIRM[en]="Invalid input. Please answer 'y' or 'n'."
 S_INVALID_INPUT_CONFIRM[pl]="Nieprawidłowe dane. Proszę odpowiedzieć 't' lub 'n'."
-
 declare -A S_FIELD_CANNOT_BE_EMPTY
 S_FIELD_CANNOT_BE_EMPTY[en]="This field cannot be empty."
 S_FIELD_CANNOT_BE_EMPTY[pl]="To pole nie może być puste."
@@ -98,15 +92,12 @@ S_FIELD_CANNOT_BE_EMPTY[pl]="To pole nie może być puste."
 declare -A S_STEP1_TITLE
 S_STEP1_TITLE[en]="Step 1: Checking and Installing Prerequisites"
 S_STEP1_TITLE[pl]="Krok 1: Sprawdzanie i Instalowanie Wymagań Wstępnych"
-
 declare -A S_CONFIRM_PREREQUISITES
-S_CONFIRM_PREREQUISITES[en]="Do you want to check/install Git, lsb-release, rsync, and .NET SDK" # Version will be appended
+S_CONFIRM_PREREQUISITES[en]="Do you want to check/install Git, lsb-release, rsync, and .NET SDK"
 S_CONFIRM_PREREQUISITES[pl]="Czy chcesz sprawdzić/zainstalować Git, lsb-release, rsync oraz .NET SDK"
-
 declare -A S_UPDATING_PACKAGES
 S_UPDATING_PACKAGES[en]="Updating package lists..."
 S_UPDATING_PACKAGES[pl]="Aktualizowanie list pakietów..."
-
 declare -A S_GIT_NOT_FOUND
 S_GIT_NOT_FOUND[en]="Git not found. Installing Git..."
 S_GIT_NOT_FOUND[pl]="Nie znaleziono Git. Instalowanie Git..."
@@ -116,7 +107,6 @@ S_GIT_INSTALLED_SUCCESS[pl]="Git zainstalowany."
 declare -A S_GIT_ALREADY_INSTALLED
 S_GIT_ALREADY_INSTALLED[en]="Git is already installed."
 S_GIT_ALREADY_INSTALLED[pl]="Git jest już zainstalowany."
-
 declare -A S_LSB_RELEASE_NOT_FOUND
 S_LSB_RELEASE_NOT_FOUND[en]="'lsb-release' command not found. Installing lsb-release package..."
 S_LSB_RELEASE_NOT_FOUND[pl]="Nie znaleziono polecenia 'lsb-release'. Instalowanie pakietu lsb-release..."
@@ -126,7 +116,6 @@ S_LSB_RELEASE_INSTALLED_SUCCESS[pl]="Pakiet 'lsb-release' zainstalowany."
 declare -A S_LSB_RELEASE_ALREADY_INSTALLED
 S_LSB_RELEASE_ALREADY_INSTALLED[en]="'lsb-release' is already installed."
 S_LSB_RELEASE_ALREADY_INSTALLED[pl]="'lsb-release' jest już zainstalowany."
-
 declare -A S_RSYNC_NOT_FOUND
 S_RSYNC_NOT_FOUND[en]="'rsync' command not found. Installing rsync package..."
 S_RSYNC_NOT_FOUND[pl]="Nie znaleziono polecenia 'rsync'. Instalowanie pakietu rsync..."
@@ -136,18 +125,17 @@ S_RSYNC_INSTALLED_SUCCESS[pl]="Pakiet 'rsync' zainstalowany."
 declare -A S_RSYNC_ALREADY_INSTALLED
 S_RSYNC_ALREADY_INSTALLED[en]="'rsync' is already installed."
 S_RSYNC_ALREADY_INSTALLED[pl]="'rsync' jest już zainstalowany."
-
 declare -A S_DOTNET_ALREADY_INSTALLED_MSG
-S_DOTNET_ALREADY_INSTALLED_MSG[en]=".NET SDK version %s.x seems to be already installed." # %s will be SDK_MAJOR_VERSION
+S_DOTNET_ALREADY_INSTALLED_MSG[en]=".NET SDK version %s.x seems to be already installed."
 S_DOTNET_ALREADY_INSTALLED_MSG[pl]="Wygląda na to, że .NET SDK w wersji %s.x jest już zainstalowany."
 declare -A S_DOTNET_CONFIRM_REINSTALL_MSG
 S_DOTNET_CONFIRM_REINSTALL_MSG[en]="Do you want to proceed with .NET SDK installation/update anyway?"
 S_DOTNET_CONFIRM_REINSTALL_MSG[pl]="Czy chcesz kontynuować instalację/aktualizację .NET SDK mimo to?"
 declare -A S_DOTNET_NOT_FOUND_MSG
-S_DOTNET_NOT_FOUND_MSG[en]=".NET SDK %s not found or a different major version is primary." # %s will be DEFAULT_DOTNET_SDK_VERSION
+S_DOTNET_NOT_FOUND_MSG[en]=".NET SDK %s not found or a different major version is primary."
 S_DOTNET_NOT_FOUND_MSG[pl]="Nie znaleziono .NET SDK %s lub główna wersja jest inna."
 declare -A S_DOTNET_INSTALLING_MSG
-S_DOTNET_INSTALLING_MSG[en]="Installing .NET SDK %s (for Debian/Ubuntu)..." # %s will be DEFAULT_DOTNET_SDK_VERSION
+S_DOTNET_INSTALLING_MSG[en]="Installing .NET SDK %s (for Debian/Ubuntu)..."
 S_DOTNET_INSTALLING_MSG[pl]="Instalowanie .NET SDK %s (dla Debian/Ubuntu)..."
 declare -A S_LSB_RELEASE_UNAVAILABLE_MANUAL_PROMPT
 S_LSB_RELEASE_UNAVAILABLE_MANUAL_PROMPT[en]="'lsb-release' is not available. You may need to input your OS version manually."
@@ -165,16 +153,16 @@ declare -A S_ABORT_NO_OS_VERSION
 S_ABORT_NO_OS_VERSION[en]="Aborting .NET SDK installation as OS version is unknown."
 S_ABORT_NO_OS_VERSION[pl]="Przerywanie instalacji .NET SDK, ponieważ wersja systemu jest nieznana."
 declare -A S_USING_OS_VERSION_FOR_SETUP
-S_USING_OS_VERSION_FOR_SETUP[en]="Using OS version: %s for .NET SDK repository setup." # %s is OS_VERSION_TO_USE
+S_USING_OS_VERSION_FOR_SETUP[en]="Using OS version: %s for .NET SDK repository setup."
 S_USING_OS_VERSION_FOR_SETUP[pl]="Używanie wersji systemu: %s do konfiguracji repozytorium .NET SDK."
 declare -A S_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN
 S_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN[en]="Could not reliably determine if OS is Debian or Ubuntu. Assuming Debian structure for .NET repo URL."
 S_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN[pl]="Nie można wiarygodnie określić, czy system to Debian czy Ubuntu. Przyjmowanie struktury Debiana dla adresu URL repozytorium .NET."
 declare -A S_ATTEMPTING_DOWNLOAD_FROM
-S_ATTEMPTING_DOWNLOAD_FROM[en]="Attempting to download from: %s" # %s is PACKAGE_URL
+S_ATTEMPTING_DOWNLOAD_FROM[en]="Attempting to download from: %s"
 S_ATTEMPTING_DOWNLOAD_FROM[pl]="Próba pobrania z: %s"
 declare -A S_DOTNET_INSTALL_COMPLETE
-S_DOTNET_INSTALL_COMPLETE[en]=".NET SDK %s installation process completed." # %s is DEFAULT_DOTNET_SDK_VERSION or actual installed
+S_DOTNET_INSTALL_COMPLETE[en]=".NET SDK %s installation process completed."
 S_DOTNET_INSTALL_COMPLETE[pl]="Proces instalacji .NET SDK %s zakończony."
 declare -A S_DOTNET_VERIFYING_INSTALL
 S_DOTNET_VERIFYING_INSTALL[en]="Verifying .NET SDK installation..."
@@ -195,9 +183,8 @@ declare -A S_DOTNET_SKIPPING_UPDATE
 S_DOTNET_SKIPPING_UPDATE[en]="Skipping .NET SDK installation/update."
 S_DOTNET_SKIPPING_UPDATE[pl]="Pominięcie instalacji/aktualizacji .NET SDK."
 declare -A S_PREREQ_SKIPPING_ALL
-S_PREREQ_SKIPPING_ALL[en]="Skipping prerequisite installation. Please ensure Git, lsb-release, rsync, and .NET SDK %s are installed." # %s is DEFAULT_DOTNET_SDK_VERSION
+S_PREREQ_SKIPPING_ALL[en]="Skipping prerequisite installation. Please ensure Git, lsb-release, rsync, and .NET SDK %s are installed."
 S_PREREQ_SKIPPING_ALL[pl]="Pominięcie instalacji wymagań wstępnych. Upewnij się, że Git, lsb-release, rsync oraz .NET SDK %s są zainstalowane."
-
 declare -A S_UBUNTU_2004_EOL_WARNING
 S_UBUNTU_2004_EOL_WARNING[en]="WARNING: Ubuntu 20.04 reaches its standard end-of-life in April 2025. Microsoft has stated that .NET 9 will NOT be supported on Ubuntu 20.04. You should upgrade your OS to a supported version (e.g., Ubuntu 22.04 or 24.04) to use .NET 9 and receive security updates."
 S_UBUNTU_2004_EOL_WARNING[pl]="OSTRZEŻENIE: Standardowe wsparcie dla Ubuntu 20.04 kończy się w kwietniu 2025. Microsoft ogłosił, że .NET 9 NIE będzie wspierany na Ubuntu 20.04. Zalecana jest aktualizacja systemu operacyjnego do wspieranej wersji (np. Ubuntu 22.04 lub 24.04), aby móc korzystać z .NET 9 i otrzymywać aktualizacje bezpieczeństwa."
@@ -208,7 +195,7 @@ declare -A S_SKIPPING_DOTNET9_UBUNTU2004
 S_SKIPPING_DOTNET9_UBUNTU2004[en]="Skipping .NET 9.0 installation due to Ubuntu 20.04 limitations and user choice."
 S_SKIPPING_DOTNET9_UBUNTU2004[pl]="Pominięcie instalacji .NET 9.0 z powodu ograniczeń Ubuntu 20.04 i wyboru użytkownika."
 declare -A S_USING_PPA_FOR_UBUNTU
-S_USING_PPA_FOR_UBUNTU[en]="Using Ubuntu PPA method for .NET SDK installation on Ubuntu %s..." # %s is OS_VERSION_TO_USE
+S_USING_PPA_FOR_UBUNTU[en]="Using Ubuntu PPA method for .NET SDK installation on Ubuntu %s..."
 S_USING_PPA_FOR_UBUNTU[pl]="Używanie metody PPA Ubuntu do instalacji .NET SDK na Ubuntu %s..."
 declare -A S_INSTALLING_SOFTWARE_PROPERTIES
 S_INSTALLING_SOFTWARE_PROPERTIES[en]="Ensuring 'software-properties-common' is installed for PPA support..."
@@ -217,18 +204,20 @@ declare -A S_ADDING_PPA_DOTNET_BACKPORTS
 S_ADDING_PPA_DOTNET_BACKPORTS[en]="Adding ppa:dotnet/backports repository..."
 S_ADDING_PPA_DOTNET_BACKPORTS[pl]="Dodawanie repozytorium ppa:dotnet/backports..."
 declare -A S_DOTNET9_PPA_INSTALL_FAILED
-S_DOTNET9_PPA_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from PPA. This might mean it's not yet available in backports for your Ubuntu version, or another issue occurred. Please check .NET 9.0 availability for your OS or try installing it manually." # %s is DEFAULT_DOTNET_SDK_VERSION
+S_DOTNET9_PPA_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from PPA. This might mean it's not yet available in backports for your Ubuntu version, or another issue occurred. Please check .NET 9.0 availability for your OS or try installing it manually."
 S_DOTNET9_PPA_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z PPA. Może to oznaczać, że nie jest jeszcze dostępny w backports dla Twojej wersji Ubuntu lub wystąpił inny problem. Sprawdź dostępność .NET 9.0 dla swojego systemu lub spróbuj zainstalować ręcznie."
 declare -A S_USING_MS_REPO_METHOD
 S_USING_MS_REPO_METHOD[en]="Using Microsoft package repository method for .NET SDK installation..."
 S_USING_MS_REPO_METHOD[pl]="Używanie metody repozytorium pakietów Microsoft do instalacji .NET SDK..."
 declare -A S_DOTNET9_MSREPO_INSTALL_FAILED
-S_DOTNET9_MSREPO_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from Microsoft repository. Please check .NET 9.0 availability for your OS or try installing it manually." # %s is DEFAULT_DOTNET_SDK_VERSION
+S_DOTNET9_MSREPO_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from Microsoft repository. Please check .NET 9.0 availability for your OS or try installing it manually."
 S_DOTNET9_MSREPO_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z repozytorium Microsoft. Sprawdź dostępność .NET 9.0 dla swojego systemu lub spróbuj zainstalować ręcznie."
+declare -A S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE
+S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[en]="Automatic .NET SDK installation for this OS combination is not fully configured. Please try manual installation."
+S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[pl]="Automatyczna instalacja .NET SDK dla tej kombinacji systemu operacyjnego nie jest w pełni skonfigurowana. Spróbuj instalacji ręcznej."
 declare -A S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT
 S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[en]="dotnet command not found after installation attempt. .NET SDK installation likely failed."
 S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[pl]="Nie znaleziono polecenia dotnet po próbie instalacji. Instalacja .NET SDK prawdopodobnie nie powiodła się."
-
 
 # --- Step 2: Clone ---
 declare -A S_STEP2_TITLE
@@ -238,7 +227,7 @@ declare -A S_PROMPT_CLONE_DIR
 S_PROMPT_CLONE_DIR[en]="Enter directory where the repository should be (or already is)"
 S_PROMPT_CLONE_DIR[pl]="Wprowadź katalog, w którym repozytorium powinno się znajdować (lub już jest)"
 declare -A S_REPO_DIR_EXISTS
-S_REPO_DIR_EXISTS[en]="Repository directory '%s' already exists." # %s is CLONE_DIR
+S_REPO_DIR_EXISTS[en]="Repository directory '%s' already exists."
 S_REPO_DIR_EXISTS[pl]="Katalog repozytorium '%s' już istnieje."
 declare -A S_IS_CORRECT_REPO
 S_IS_CORRECT_REPO[en]="It appears to be the correct GbbConnect2 repository."
@@ -247,7 +236,7 @@ declare -A S_CONFIRM_GIT_PULL
 S_CONFIRM_GIT_PULL[en]="Do you want to fetch the latest changes (git pull)?"
 S_CONFIRM_GIT_PULL[pl]="Czy chcesz pobrać najnowsze zmiany (git pull)?"
 declare -A S_FETCHING_LATEST
-S_FETCHING_LATEST[en]="Fetching latest changes for '%s'..." # %s is CLONE_DIR
+S_FETCHING_LATEST[en]="Fetching latest changes for '%s'..."
 S_FETCHING_LATEST[pl]="Pobieranie najnowszych zmian dla '%s'..."
 declare -A S_REPO_UPDATED
 S_REPO_UPDATED[en]="Repository updated."
@@ -256,34 +245,34 @@ declare -A S_PULL_FAILED
 S_PULL_FAILED[en]="Failed to pull latest changes. Continuing with the current version."
 S_PULL_FAILED[pl]="Nie udało się pobrać najnowszych zmian. Kontynuowanie z bieżącą wersją."
 declare -A S_SKIPPING_UPDATE_USE_CURRENT
-S_SKIPPING_UPDATE_USE_CURRENT[en]="Skipping update. Using current version in '%s'." # %s is CLONE_DIR
+S_SKIPPING_UPDATE_USE_CURRENT[en]="Skipping update. Using current version in '%s'."
 S_SKIPPING_UPDATE_USE_CURRENT[pl]="Pominięcie aktualizacji. Używanie bieżącej wersji w '%s'."
 declare -A S_DIR_EXISTS_WRONG_REPO_URL
-S_DIR_EXISTS_WRONG_REPO_URL[en]="The directory '%s' exists but its remote origin URL ('%s') does not match the expected '%s'." # $CLONE_DIR, $CURRENT_REMOTE_URL, $GITHUB_REPO
+S_DIR_EXISTS_WRONG_REPO_URL[en]="The directory '%s' exists but its remote origin URL ('%s') does not match the expected '%s'."
 S_DIR_EXISTS_WRONG_REPO_URL[pl]="Katalog '%s' istnieje, ale jego zdalny adres URL ('%s') nie pasuje do oczekiwanego '%s'."
 declare -A S_DIR_EXISTS_NOT_GIT
-S_DIR_EXISTS_NOT_GIT[en]="The directory '%s' exists but does not appear to be a Git repository." # %s is CLONE_DIR
+S_DIR_EXISTS_NOT_GIT[en]="The directory '%s' exists but does not appear to be a Git repository."
 S_DIR_EXISTS_NOT_GIT[pl]="Katalog '%s' istnieje, ale nie wydaje się być repozytorium Git."
 declare -A S_CONFIRM_REMOVE_AND_RECLONE
-S_CONFIRM_REMOVE_AND_RECLONE[en]="Do you want to remove the existing directory '%s' and clone the correct repository anew?" # %s is CLONE_DIR
+S_CONFIRM_REMOVE_AND_RECLONE[en]="Do you want to remove the existing directory '%s' and clone the correct repository anew?"
 S_CONFIRM_REMOVE_AND_RECLONE[pl]="Czy chcesz usunąć istniejący katalog '%s' i sklonować poprawne repozytorium od nowa?"
 declare -A S_REMOVING_DIR
-S_REMOVING_DIR[en]="Removing existing directory '%s'..." # %s is CLONE_DIR
+S_REMOVING_DIR[en]="Removing existing directory '%s'..."
 S_REMOVING_DIR[pl]="Usuwanie istniejącego katalogu '%s'..."
 declare -A S_CLONING_REPO_TO
-S_CLONING_REPO_TO[en]="Cloning %s into %s..." # %s is GITHUB_REPO, %s is CLONE_DIR
+S_CLONING_REPO_TO[en]="Cloning %s into %s..."
 S_CLONING_REPO_TO[pl]="Klonowanie %s do %s..."
 declare -A S_REPO_CLONED_SUCCESS
 S_REPO_CLONED_SUCCESS[en]="Repository cloned."
 S_REPO_CLONED_SUCCESS[pl]="Repozytorium sklonowane."
 declare -A S_CANNOT_PROCEED_WRONG_REPO
-S_CANNOT_PROCEED_WRONG_REPO[en]="Cannot proceed without the correct repository at '%s'. Exiting." # %s is CLONE_DIR
+S_CANNOT_PROCEED_WRONG_REPO[en]="Cannot proceed without the correct repository at '%s'. Exiting."
 S_CANNOT_PROCEED_WRONG_REPO[pl]="Nie można kontynuować bez poprawnego repozytorium w '%s'. Zamykanie."
 declare -A S_REPO_DIR_NOT_EXIST_CONFIRM_CLONE
-S_REPO_DIR_NOT_EXIST_CONFIRM_CLONE[en]="Repository directory '%s' does not exist. Do you want to clone %s into it?" # %s is CLONE_DIR, %s is GITHUB_REPO
+S_REPO_DIR_NOT_EXIST_CONFIRM_CLONE[en]="Repository directory '%s' does not exist. Do you want to clone %s into it?"
 S_REPO_DIR_NOT_EXIST_CONFIRM_CLONE[pl]="Katalog repozytorium '%s' nie istnieje. Czy chcesz sklonować %s do niego?"
 declare -A S_REPO_NOT_FOUND_DECLINED_CLONE
-S_REPO_NOT_FOUND_DECLINED_CLONE[en]="Repository not found at '%s' and cloning was declined. Exiting." # %s is CLONE_DIR
+S_REPO_NOT_FOUND_DECLINED_CLONE[en]="Repository not found at '%s' and cloning was declined. Exiting."
 S_REPO_NOT_FOUND_DECLINED_CLONE[pl]="Nie znaleziono repozytorium w '%s', a klonowanie zostało odrzucone. Zamykanie."
 
 # --- Step 3: Compile ---
@@ -291,31 +280,31 @@ declare -A S_STEP3_TITLE
 S_STEP3_TITLE[en]="Step 3: Compiling GbbConnect2.Console"
 S_STEP3_TITLE[pl]="Krok 3: Kompilacja GbbConnect2.Console"
 declare -A S_CONSOLE_PROJECT_PATH_NOT_FOUND
-S_CONSOLE_PROJECT_PATH_NOT_FOUND[en]="Console project path '%s' not found." # %s is CONSOLE_PROJECT_PATH
+S_CONSOLE_PROJECT_PATH_NOT_FOUND[en]="Console project path '%s' not found."
 S_CONSOLE_PROJECT_PATH_NOT_FOUND[pl]="Nie znaleziono ścieżki projektu konsoli '%s'."
 declare -A S_PROGRAM_CS_SYNTAX_ERROR_DETECTED
-S_PROGRAM_CS_SYNTAX_ERROR_DETECTED[en]="Detected potential syntax error (extra dot) in '%s'. Attempting to fix..." # %s is PROGRAM_CS_FILE
+S_PROGRAM_CS_SYNTAX_ERROR_DETECTED[en]="Detected potential syntax error (extra dot) in '%s'. Attempting to fix..."
 S_PROGRAM_CS_SYNTAX_ERROR_DETECTED[pl]="Wykryto potencjalny błąd składni (dodatkowa kropka) w '%s'. Próba naprawy..."
 declare -A S_PROGRAM_CS_SYNTAX_FIXED
-S_PROGRAM_CS_SYNTAX_FIXED[en]="Potential syntax error fixed in '%s'." # %s is PROGRAM_CS_FILE
+S_PROGRAM_CS_SYNTAX_FIXED[en]="Potential syntax error fixed in '%s'."
 S_PROGRAM_CS_SYNTAX_FIXED[pl]="Potencjalny błąd składni naprawiony w '%s'."
 declare -A S_PROGRAM_CS_NOT_FOUND_SKIP_CHECK
-S_PROGRAM_CS_NOT_FOUND_SKIP_CHECK[en]="Program.cs file not found at '%s'. Skipping syntax check." # %s is PROGRAM_CS_FILE
+S_PROGRAM_CS_NOT_FOUND_SKIP_CHECK[en]="Program.cs file not found at '%s'. Skipping syntax check."
 S_PROGRAM_CS_NOT_FOUND_SKIP_CHECK[pl]="Nie znaleziono pliku Program.cs w '%s'. Pomijanie sprawdzania składni."
 declare -A S_CURRENT_DIRECTORY
-S_CURRENT_DIRECTORY[en]="Current directory: %s" # %s is $(pwd)
+S_CURRENT_DIRECTORY[en]="Current directory: %s"
 S_CURRENT_DIRECTORY[pl]="Bieżący katalog: %s"
 declare -A S_CONFIRM_CLEAN_BUILD_ARTIFACTS
-S_CONFIRM_CLEAN_BUILD_ARTIFACTS[en]="Clean previous build artifacts (bin, obj, %s)?" # %s is PUBLISH_OUTPUT_DIR_NAME
+S_CONFIRM_CLEAN_BUILD_ARTIFACTS[en]="Clean previous build artifacts (bin, obj, %s)?"
 S_CONFIRM_CLEAN_BUILD_ARTIFACTS[pl]="Wyczyścić poprzednie artefakty kompilacji (bin, obj, %s)?"
 declare -A S_CLEANING_BUILD_ARTIFACTS
 S_CLEANING_BUILD_ARTIFACTS[en]="Cleaning previous build artifacts..."
 S_CLEANING_BUILD_ARTIFACTS[pl]="Czyszczenie poprzednich artefaktów kompilacji..."
 declare -A S_PUBLISHING_APP_FOR_RUNTIME
-S_PUBLISHING_APP_FOR_RUNTIME[en]="Publishing GbbConnect2.Console for %s..." # %s is DEFAULT_PUBLISH_TARGET_RUNTIME
+S_PUBLISHING_APP_FOR_RUNTIME[en]="Publishing GbbConnect2.Console for %s..."
 S_PUBLISHING_APP_FOR_RUNTIME[pl]="Publikowanie GbbConnect2.Console dla %s..."
 declare -A S_APP_PUBLISHED_TO
-S_APP_PUBLISHED_TO[en]="Application published to '%s'." # %s is PUBLISHED_ARTIFACTS_PATH
+S_APP_PUBLISHED_TO[en]="Application published to '%s'."
 S_APP_PUBLISHED_TO[pl]="Aplikacja opublikowana do '%s'."
 declare -A S_DOTNET_PUBLISH_FAILED
 S_DOTNET_PUBLISH_FAILED[en]="dotnet publish command failed. Please check the output above for errors."
@@ -323,8 +312,8 @@ S_DOTNET_PUBLISH_FAILED[pl]="Polecenie dotnet publish nie powiodło się. Sprawd
 
 # --- Step 4: Service Setup & Parameters.xml ---
 declare -A S_STEP4_TITLE
-S_STEP4_TITLE[en]="Step 4: Configuring Parameters.xml and Setting up systemd Service"
-S_STEP4_TITLE[pl]="Krok 4: Konfiguracja Parameters.xml i Ustawianie Usługi systemd"
+S_STEP4_TITLE[en]="Step 4: Configuring Parameters.xml, backing up old versions, and setting up systemd service"
+S_STEP4_TITLE[pl]="Krok 4: Konfiguracja Parameters.xml, tworzenie kopii zapasowej starych wersji i ustawianie usługi systemd"
 declare -A S_CONFIRM_PARAMS_AND_SERVICE_SETUP
 S_CONFIRM_PARAMS_AND_SERVICE_SETUP[en]="Do you want to proceed with configuring Parameters.xml and setting up the systemd service?"
 S_CONFIRM_PARAMS_AND_SERVICE_SETUP[pl]="Czy chcesz kontynuować konfigurację Parameters.xml i ustawianie usługi systemd?"
@@ -332,7 +321,7 @@ declare -A S_SKIPPING_PARAMS_AND_SERVICE_SETUP
 S_SKIPPING_PARAMS_AND_SERVICE_SETUP[en]="Skipping Parameters.xml and systemd service setup."
 S_SKIPPING_PARAMS_AND_SERVICE_SETUP[pl]="Pominięcie konfiguracji Parameters.xml i usługi systemd."
 declare -A S_SETUP_FINISHED_APP_AT
-S_SETUP_FINISHED_APP_AT[en]="Setup script finished. You can find the compiled application at '%s'." # %s is PUBLISHED_ARTIFACTS_PATH
+S_SETUP_FINISHED_APP_AT[en]="Setup script finished. You can find the compiled application at '%s'."
 S_SETUP_FINISHED_APP_AT[pl]="Skrypt instalacyjny zakończony. Skompilowaną aplikację można znaleźć w '%s'."
 declare -A S_PROMPT_SERVICE_USER
 S_PROMPT_SERVICE_USER[en]="Enter desired service user name"
@@ -341,29 +330,41 @@ declare -A S_PROMPT_APP_NAME_FOR_SERVICE
 S_PROMPT_APP_NAME_FOR_SERVICE[en]="Enter application name for service and directory"
 S_PROMPT_APP_NAME_FOR_SERVICE[pl]="Wprowadź nazwę aplikacji dla usługi i katalogu"
 declare -A S_USER_ALREADY_EXISTS
-S_USER_ALREADY_EXISTS[en]="User '%s' already exists." # %s is SERVICE_USER
+S_USER_ALREADY_EXISTS[en]="User '%s' already exists."
 S_USER_ALREADY_EXISTS[pl]="Użytkownik '%s' już istnieje."
 declare -A S_CREATING_SYSTEM_USER
-S_CREATING_SYSTEM_USER[en]="Creating system user '%s'..." # %s is SERVICE_USER
+S_CREATING_SYSTEM_USER[en]="Creating system user '%s'..."
 S_CREATING_SYSTEM_USER[pl]="Tworzenie użytkownika systemowego '%s'..."
 declare -A S_USER_CREATED_SUCCESS
-S_USER_CREATED_SUCCESS[en]="User '%s' created." # %s is SERVICE_USER
+S_USER_CREATED_SUCCESS[en]="User '%s' created."
 S_USER_CREATED_SUCCESS[pl]="Użytkownik '%s' utworzony."
 declare -A S_DEPLOYING_FILES_TO
-S_DEPLOYING_FILES_TO[en]="Deploying application files to '%s'..." # %s is DEPLOY_DIR
+S_DEPLOYING_FILES_TO[en]="Deploying application files to '%s'..."
 S_DEPLOYING_FILES_TO[pl]="Wdrażanie plików aplikacji do '%s'..."
-declare -A S_DEPLOY_DIR_EXISTS
-S_DEPLOY_DIR_EXISTS[en]="Deployment directory '%s' already exists." # %s is DEPLOY_DIR
-S_DEPLOY_DIR_EXISTS[pl]="Katalog wdrożenia '%s' już istnieje."
-declare -A S_CONFIRM_REMOVE_CONTENTS_REDEPLOY
-S_CONFIRM_REMOVE_CONTENTS_REDEPLOY[en]="Do you want to remove its contents (excluding Parameters.xml if present) and redeploy application binaries?"
-S_CONFIRM_REMOVE_CONTENTS_REDEPLOY[pl]="Czy chcesz usunąć jego zawartość (z wyjątkiem Parameters.xml, jeśli istnieje) i ponownie wdrożyć pliki binarne aplikacji?"
-declare -A S_SKIPPING_REMOVAL_OVERWRITE_NOTE
-S_SKIPPING_REMOVAL_OVERWRITE_NOTE[en]="Skipping removal. New files might overwrite existing ones."
-S_SKIPPING_REMOVAL_OVERWRITE_NOTE[pl]="Pominięcie usuwania. Nowe pliki mogą nadpisać istniejące."
-declare -A S_COPYING_BINARIES_FROM_TO
-S_COPYING_BINARIES_FROM_TO[en]="Copying application binaries from '%s' to '%s'..." # %s PUBLISHED_ARTIFACTS_PATH, %s DEPLOY_DIR
-S_COPYING_BINARIES_FROM_TO[pl]="Kopiowanie plików binarnych aplikacji z '%s' do '%s'..."
+declare -A S_DEPLOY_DIR_EXISTS_EMPTY_SKIP_BACKUP
+S_DEPLOY_DIR_EXISTS_EMPTY_SKIP_BACKUP[en]="Deployment directory '%s' exists but seems empty or only contains Parameters.xml/backups. Skipping backup of binaries."
+S_DEPLOY_DIR_EXISTS_EMPTY_SKIP_BACKUP[pl]="Katalog wdrożenia '%s' istnieje, ale wydaje się pusty lub zawiera tylko Parameters.xml/kopie zapasowe. Pomijanie tworzenia kopii zapasowej plików binarnych."
+declare -A S_BACKING_UP_OLD_VERSION
+S_BACKING_UP_OLD_VERSION[en]="Backing up existing application version in '%s' to '%s'..."
+S_BACKING_UP_OLD_VERSION[pl]="Tworzenie kopii zapasowej istniejącej wersji aplikacji w '%s' do '%s'..."
+declare -A S_BACKUP_SUCCESSFUL
+S_BACKUP_SUCCESSFUL[en]="Backup successful."
+S_BACKUP_SUCCESSFUL[pl]="Kopia zapasowa utworzona pomyślnie."
+declare -A S_BACKUP_FAILED
+S_BACKUP_FAILED[en]="Backup failed. Please check permissions or disk space."
+S_BACKUP_FAILED[pl]="Tworzenie kopii zapasowej nie powiodło się. Sprawdź uprawnienia lub miejsce na dysku."
+declare -A S_PARAMS_XML_EXISTS
+S_PARAMS_XML_EXISTS[en]="An existing Parameters.xml file was found at '%s'."
+S_PARAMS_XML_EXISTS[pl]="Znaleziono istniejący plik Parameters.xml w '%s'."
+declare -A S_CONFIRM_RECONFIGURE_PARAMS
+S_CONFIRM_RECONFIGURE_PARAMS[en]="Do you want to reconfigure Parameters.xml now? (Choosing 'N' will keep the existing one)"
+S_CONFIRM_RECONFIGURE_PARAMS[pl]="Czy chcesz teraz ponownie skonfigurować Parameters.xml? (Wybór 'N' zachowa istniejący)"
+declare -A S_KEEPING_EXISTING_PARAMS
+S_KEEPING_EXISTING_PARAMS[en]="Keeping the existing Parameters.xml file."
+S_KEEPING_EXISTING_PARAMS[pl]="Zachowywanie istniejącego pliku Parameters.xml."
+declare -A S_SKIPPING_PARAMS_CONFIG_USER_CHOICE
+S_SKIPPING_PARAMS_CONFIG_USER_CHOICE[en]="Skipping Parameters.xml configuration as per user choice."
+S_SKIPPING_PARAMS_CONFIG_USER_CHOICE[pl]="Pominięcie konfiguracji Parameters.xml zgodnie z wyborem użytkownika."
 declare -A S_CONFIGURING_PARAMS_XML
 S_CONFIGURING_PARAMS_XML[en]="Configuring Parameters.xml"
 S_CONFIGURING_PARAMS_XML[pl]="Konfiguracja Parameters.xml"
@@ -398,31 +399,34 @@ declare -A S_PROMPT_MQTT_PORT
 S_PROMPT_MQTT_PORT[en]="Enter MQTT Server Port"
 S_PROMPT_MQTT_PORT[pl]="Wprowadź port serwera MQTT"
 declare -A S_WRITING_PARAMS_XML_TO
-S_WRITING_PARAMS_XML_TO[en]="Writing configured Parameters.xml to '%s'..." # %s PARAMETERS_FILE_PATH
+S_WRITING_PARAMS_XML_TO[en]="Writing configured Parameters.xml to '%s'..."
 S_WRITING_PARAMS_XML_TO[pl]="Zapisywanie skonfigurowanego Parameters.xml do '%s'..."
 declare -A S_PARAMS_XML_CONFIGURED_SUCCESS
 S_PARAMS_XML_CONFIGURED_SUCCESS[en]="Parameters.xml configured."
 S_PARAMS_XML_CONFIGURED_SUCCESS[pl]="Parameters.xml skonfigurowany."
+declare -A S_COPYING_BINARIES_FROM_TO
+S_COPYING_BINARIES_FROM_TO[en]="Copying new application binaries from '%s' to '%s'..."
+S_COPYING_BINARIES_FROM_TO[pl]="Kopiowanie nowych plików binarnych aplikacji z '%s' do '%s'..."
 declare -A S_SETTING_FINAL_OWNERSHIP_PERMS
-S_SETTING_FINAL_OWNERSHIP_PERMS[en]="Setting final ownership and permissions for '%s'..." # %s DEPLOY_DIR
+S_SETTING_FINAL_OWNERSHIP_PERMS[en]="Setting final ownership and permissions for '%s'..."
 S_SETTING_FINAL_OWNERSHIP_PERMS[pl]="Ustawianie ostatecznej własności i uprawnień dla '%s'..."
 declare -A S_APP_DEPLOYED_PERMS_SET_SUCCESS
 S_APP_DEPLOYED_PERMS_SET_SUCCESS[en]="Application deployed and permissions set."
 S_APP_DEPLOYED_PERMS_SET_SUCCESS[pl]="Aplikacja wdrożona, a uprawnienia ustawione."
 declare -A S_CREATING_SERVICE_FILE_AT
-S_CREATING_SERVICE_FILE_AT[en]="Creating systemd service file at '%s'..." # %s SERVICE_FILE_PATH
+S_CREATING_SERVICE_FILE_AT[en]="Creating systemd service file at '%s'..."
 S_CREATING_SERVICE_FILE_AT[pl]="Tworzenie pliku usługi systemd w '%s'..."
 declare -A S_SERVICE_NAME_SANITIZED
-S_SERVICE_NAME_SANITIZED[en]="Service name '%s' was sanitized to '%s' for the service file name." # %s APP_NAME, %s SAFE_APP_NAME
+S_SERVICE_NAME_SANITIZED[en]="Service name '%s' was sanitized to '%s' for the service file name."
 S_SERVICE_NAME_SANITIZED[pl]="Nazwa usługi '%s' została oczyszczona do '%s' dla nazwy pliku usługi."
 declare -A S_SERVICE_FILE_CREATED_SUCCESS
 S_SERVICE_FILE_CREATED_SUCCESS[en]="Systemd service file created."
 S_SERVICE_FILE_CREATED_SUCCESS[pl]="Plik usługi systemd utworzony."
 declare -A S_RELOADING_DAEMON_ENABLING_STARTING_SERVICE
-S_RELOADING_DAEMON_ENABLING_STARTING_SERVICE[en]="Reloading systemd daemon, enabling and starting service '%s'..." # %s APP_NAME
+S_RELOADING_DAEMON_ENABLING_STARTING_SERVICE[en]="Reloading systemd daemon, enabling and starting service '%s'..."
 S_RELOADING_DAEMON_ENABLING_STARTING_SERVICE[pl]="Przeładowywanie demona systemd, włączanie i uruchamianie usługi '%s'..."
 declare -A S_SERVICE_ENABLED_STARTED_SUCCESS
-S_SERVICE_ENABLED_STARTED_SUCCESS[en]="Service '%s' enabled and started/restarted." # %s APP_NAME
+S_SERVICE_ENABLED_STARTED_SUCCESS[en]="Service '%s' enabled and started/restarted."
 S_SERVICE_ENABLED_STARTED_SUCCESS[pl]="Usługa '%s' włączona i uruchomiona/zrestartowana."
 
 # --- Step 5: Verification ---
@@ -430,7 +434,7 @@ declare -A S_STEP5_TITLE
 S_STEP5_TITLE[en]="Step 5: Verification"
 S_STEP5_TITLE[pl]="Krok 5: Weryfikacja"
 declare -A S_SERVICE_SHOULD_BE_RUNNING
-S_SERVICE_SHOULD_BE_RUNNING[en]="The service '%s' should now be running." # %s APP_NAME
+S_SERVICE_SHOULD_BE_RUNNING[en]="The service '%s' should now be running."
 S_SERVICE_SHOULD_BE_RUNNING[pl]="Usługa '%s' powinna teraz działać."
 declare -A S_CHECK_STATUS_WITH
 S_CHECK_STATUS_WITH[en]="You can check its status with:"
@@ -578,7 +582,7 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
     fi
 
     SDK_MAJOR_VERSION=$(echo "$DEFAULT_DOTNET_SDK_VERSION" | cut -d. -f1)
-    INSTALL_DOTNET_SDK=false # Default to false, set true if install needed
+    INSTALL_DOTNET_SDK=false
     
     L_DOTNET_ALREADY_INSTALLED_MSG_FORMATTED=$(printf "${S_DOTNET_ALREADY_INSTALLED_MSG[$LANG_SELECTED]}" "$SDK_MAJOR_VERSION")
     L_DOTNET_NOT_FOUND_MSG_FORMATTED=$(printf "${S_DOTNET_NOT_FOUND_MSG[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
@@ -619,7 +623,7 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
             L_USING_OS_VERSION_FOR_SETUP_FORMATTED=$(printf "${S_USING_OS_VERSION_FOR_SETUP[$LANG_SELECTED]}" "$OS_VERSION_TO_USE")
             print_info "$L_USING_OS_VERSION_FOR_SETUP_FORMATTED"
             
-            OS_TYPE="unknown" # Renamed from OS_TYPE_FOR_URL for consistency with user script
+            OS_TYPE="unknown" 
             if [ -f /etc/os-release ]; then
                 . /etc/os-release 
                 if [ "$ID" == "ubuntu" ]; then
@@ -640,8 +644,7 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
                 fi
             fi
 
-            # --- UBUNTU 20.04 WARNING ---
-            ATTEMPT_DOTNET_INSTALL_FLAG=true # Flag to control actual installation attempt
+            ATTEMPT_DOTNET_INSTALL_FLAG=true 
             if [ "$OS_TYPE" == "ubuntu" ] && [ "$OS_VERSION_TO_USE" == "20.04" ]; then
                 print_warning "${S_UBUNTU_2004_EOL_WARNING[$LANG_SELECTED]}"
                 if ! confirm_action "${S_CONFIRM_DOTNET9_ON_UBUNTU2004[$LANG_SELECTED]}"; then
@@ -651,7 +654,6 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
             fi
 
             if [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ]; then
-                # --- UBUNTU SPECIFIC PPA METHOD for 22.04 and 24.04 ---
                 if [ "$OS_TYPE" == "ubuntu" ] && ([ "$OS_VERSION_TO_USE" == "22.04" ] || [ "$OS_VERSION_TO_USE" == "24.04" ]); then
                     L_USING_PPA_FOR_UBUNTU_FORMATTED=$(printf "${S_USING_PPA_FOR_UBUNTU[$LANG_SELECTED]}" "$OS_VERSION_TO_USE")
                     print_info "$L_USING_PPA_FOR_UBUNTU_FORMATTED"
@@ -667,8 +669,6 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
                         L_DOTNET_INSTALL_COMPLETE_FORMATTED=$(printf "${S_DOTNET_INSTALL_COMPLETE[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
                         print_success "$L_DOTNET_INSTALL_COMPLETE_FORMATTED"
                     fi
-                # --- DEFAULT MICROSOFT REPO METHOD (for Debian, other Ubuntu versions) ---
-                # Also applies if Ubuntu 20.04 user chose to proceed despite warning
                 elif [ "$OS_TYPE" == "debian" ] || \
                      ([ "$OS_TYPE" == "ubuntu" ] && ([ "$OS_VERSION_TO_USE" == "20.04" ] || ([ "$OS_VERSION_TO_USE" != "22.04" ] && [ "$OS_VERSION_TO_USE" != "24.04" ]))); then
                     print_info "${S_USING_MS_REPO_METHOD[$LANG_SELECTED]}"
@@ -681,7 +681,7 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
                         rm packages-microsoft-prod.deb
                         sudo apt update 
                         sudo apt install -y apt-transport-https 
-                        sudo apt update # Extra update
+                        sudo apt update 
                         if ! sudo apt install -y "dotnet-sdk-${DEFAULT_DOTNET_SDK_VERSION}"; then
                             L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED=$(printf "${S_DOTNET9_MSREPO_INSTALL_FAILED[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION")
                             print_error "$L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED"
@@ -694,7 +694,6 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
                         print_error "${S_DOTNET_SKIPPING_INSTALL[$LANG_SELECTED]}" 
                     fi
                 else
-                    # This case handles any other OS_TYPE or an Ubuntu version not explicitly listed above for PPA or MS repo.
                     print_warning "${S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[$LANG_SELECTED]}"
                 fi
             fi 
@@ -705,7 +704,6 @@ if confirm_action "$PREREQ_CONFIRM_MSG"; then
             elif [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ]; then 
                 print_error "${S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[$LANG_SELECTED]}"
             fi
-
         else 
             print_error "${S_COULD_NOT_DETERMINE_OS_VERSION_SKIP_DOTNET[$LANG_SELECTED]}" 
             print_error "${S_DOTNET_MANUAL_INSTALL_NOTE[$LANG_SELECTED]}" 
@@ -836,7 +834,7 @@ fi
 cd - > /dev/null
 echo "---"
 
-# --- 4. Systemd Service Setup (Includes Parameters.xml Generation) ---
+# --- 4. Systemd Service Setup (Includes Backup, Parameters.xml Handling, and Generation) ---
 print_info "${S_STEP4_TITLE[$LANG_SELECTED]}"
 
 if ! confirm_action "${S_CONFIRM_PARAMS_AND_SERVICE_SETUP[$LANG_SELECTED]}"; then
@@ -852,6 +850,8 @@ prompt_with_default "${S_PROMPT_APP_NAME_FOR_SERVICE[$LANG_SELECTED]}" "$DEFAULT
 DEPLOY_DIR="${DEFAULT_DEPLOY_BASE_DIR}/${APP_NAME}"
 EXECUTABLE_NAME="GbbConnect2Console"
 PARAMETERS_FILE_PATH="${DEPLOY_DIR}/Parameters.xml"
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+BACKUP_DIR_BASE="${DEPLOY_DIR}_backup" 
 
 if id -u "$SERVICE_USER" &>/dev/null; then
     L_USER_ALREADY_EXISTS_FORMATTED=$(printf "${S_USER_ALREADY_EXISTS[$LANG_SELECTED]}" "$SERVICE_USER")
@@ -866,34 +866,48 @@ fi
 
 L_DEPLOYING_FILES_TO_FORMATTED=$(printf "${S_DEPLOYING_FILES_TO[$LANG_SELECTED]}" "$DEPLOY_DIR")
 print_info "$L_DEPLOYING_FILES_TO_FORMATTED"
-if [ -d "$DEPLOY_DIR" ]; then
-    L_DEPLOY_DIR_EXISTS_FORMATTED=$(printf "${S_DEPLOY_DIR_EXISTS[$LANG_SELECTED]}" "$DEPLOY_DIR")
-    print_warning "$L_DEPLOY_DIR_EXISTS_FORMATTED"
-    if confirm_action "${S_CONFIRM_REMOVE_CONTENTS_REDEPLOY[$LANG_SELECTED]}"; then
-        sudo find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 ! -name 'Parameters.xml' -exec rm -rf {} +
+
+if [ -d "$DEPLOY_DIR" ] && [ "$(ls -A $DEPLOY_DIR | grep -vE '^(Parameters.xml|backups?(_[0-9]+)?)$' )" ]; then 
+    BACKUP_DIR="${BACKUP_DIR_BASE}_${TIMESTAMP}"
+    L_BACKING_UP_OLD_VERSION_FORMATTED=$(printf "${S_BACKING_UP_OLD_VERSION[$LANG_SELECTED]}" "$DEPLOY_DIR" "$BACKUP_DIR")
+    print_info "$L_BACKING_UP_OLD_VERSION_FORMATTED"
+    if sudo mkdir -p "$BACKUP_DIR" && sudo rsync -a --remove-source-files --exclude="Parameters.xml" --exclude="backups*" --exclude="*_backup_*" "$DEPLOY_DIR/" "$BACKUP_DIR/"; then
+        sudo find "$DEPLOY_DIR" -mindepth 1 -maxdepth 1 ! -name 'Parameters.xml' ! -name 'backups*' ! -name '*_backup_*' -exec rm -rf {} +
+        print_success "${S_BACKUP_SUCCESSFUL[$LANG_SELECTED]}"
     else
-        print_info "${S_SKIPPING_REMOVAL_OVERWRITE_NOTE[$LANG_SELECTED]}"
+        print_warning "${S_BACKUP_FAILED[$LANG_SELECTED]}"
+    fi
+elif [ -d "$DEPLOY_DIR" ]; then
+     L_DEPLOY_DIR_EXISTS_EMPTY_SKIP_BACKUP_FORMATTED=$(printf "${S_DEPLOY_DIR_EXISTS_EMPTY_SKIP_BACKUP[$LANG_SELECTED]}" "$DEPLOY_DIR")
+     print_info "$L_DEPLOY_DIR_EXISTS_EMPTY_SKIP_BACKUP_FORMATTED"
+fi
+sudo mkdir -p "$DEPLOY_DIR" 
+
+CONFIGURE_PARAMETERS=true 
+if [ -f "$PARAMETERS_FILE_PATH" ]; then
+    L_PARAMS_XML_EXISTS_FORMATTED=$(printf "${S_PARAMS_XML_EXISTS[$LANG_SELECTED]}" "$PARAMETERS_FILE_PATH")
+    print_info "$L_PARAMS_XML_EXISTS_FORMATTED"
+    if ! confirm_action "${S_CONFIRM_RECONFIGURE_PARAMS[$LANG_SELECTED]}"; then
+        print_info "${S_KEEPING_EXISTING_PARAMS[$LANG_SELECTED]}"
+        CONFIGURE_PARAMETERS=false
     fi
 fi
-sudo mkdir -p "$DEPLOY_DIR"
-L_COPYING_BINARIES_FROM_TO_FORMATTED=$(printf "${S_COPYING_BINARIES_FROM_TO[$LANG_SELECTED]}" "$PUBLISHED_ARTIFACTS_PATH" "$DEPLOY_DIR")
-print_info "$L_COPYING_BINARIES_FROM_TO_FORMATTED"
-sudo rsync -av --exclude 'Parameters.xml' "${PUBLISHED_ARTIFACTS_PATH}/" "$DEPLOY_DIR/"
 
-print_info "${S_CONFIGURING_PARAMS_XML[$LANG_SELECTED]}"
-echo "${S_PARAMS_PROMPT_INTRO[$LANG_SELECTED]}"
-echo "${S_MQTT_SERVER_INFO_URL[$LANG_SELECTED]}"
-echo "${S_PLANT_ID_TOKEN_INFO[$LANG_SELECTED]}"
+if [ "$CONFIGURE_PARAMETERS" = true ]; then
+    print_info "${S_CONFIGURING_PARAMS_XML[$LANG_SELECTED]}"
+    echo "${S_PARAMS_PROMPT_INTRO[$LANG_SELECTED]}"
+    echo "${S_MQTT_SERVER_INFO_URL[$LANG_SELECTED]}"
+    echo "${S_PLANT_ID_TOKEN_INFO[$LANG_SELECTED]}"
 
-prompt_for_value "${S_PROMPT_GBB_PLANT_NAME[$LANG_SELECTED]}" INPUT_GBB_PLANT_NAME
-prompt_for_value "${S_PROMPT_DEYE_IP[$LANG_SELECTED]}" INPUT_DEYE_DONGLE_IP
-prompt_for_value "${S_PROMPT_DEYE_SN[$LANG_SELECTED]}" INPUT_DEYE_DONGLE_SN
-prompt_for_value "${S_PROMPT_PLANT_ID[$LANG_SELECTED]}" INPUT_PLANT_ID
-prompt_for_value "${S_PROMPT_PLANT_TOKEN[$LANG_SELECTED]}" INPUT_PLANT_TOKEN
-prompt_for_value "${S_PROMPT_MQTT_ADDRESS[$LANG_SELECTED]}" INPUT_MQTT_ADDRESS
-prompt_with_default "${S_PROMPT_MQTT_PORT[$LANG_SELECTED]}" "$DEFAULT_MQTT_PORT" INPUT_MQTT_PORT
+    prompt_for_value "${S_PROMPT_GBB_PLANT_NAME[$LANG_SELECTED]}" INPUT_GBB_PLANT_NAME
+    prompt_for_value "${S_PROMPT_DEYE_IP[$LANG_SELECTED]}" INPUT_DEYE_DONGLE_IP
+    prompt_for_value "${S_PROMPT_DEYE_SN[$LANG_SELECTED]}" INPUT_DEYE_DONGLE_SN
+    prompt_for_value "${S_PROMPT_PLANT_ID[$LANG_SELECTED]}" INPUT_PLANT_ID
+    prompt_for_value "${S_PROMPT_PLANT_TOKEN[$LANG_SELECTED]}" INPUT_PLANT_TOKEN
+    prompt_for_value "${S_PROMPT_MQTT_ADDRESS[$LANG_SELECTED]}" INPUT_MQTT_ADDRESS
+    prompt_with_default "${S_PROMPT_MQTT_PORT[$LANG_SELECTED]}" "$DEFAULT_MQTT_PORT" INPUT_MQTT_PORT
 
-PARAMETERS_XML_CONTENT=$(cat <<EOF
+    PARAMETERS_XML_CONTENT=$(cat <<EOF
 <?xml version="1.0" encoding="utf-8"?>
 <Parameters Version="1" Server_AutoStart="1" IsVerboseLog="1" IsDriverLog="0" IsDriverLog2="0">
   <Plant Version="1"
@@ -911,17 +925,25 @@ PARAMETERS_XML_CONTENT=$(cat <<EOF
 </Parameters>
 EOF
 )
+    L_WRITING_PARAMS_XML_TO_FORMATTED=$(printf "${S_WRITING_PARAMS_XML_TO[$LANG_SELECTED]}" "$PARAMETERS_FILE_PATH")
+    print_info "$L_WRITING_PARAMS_XML_TO_FORMATTED"
+    echo "$PARAMETERS_XML_CONTENT" | sudo tee "$PARAMETERS_FILE_PATH" > /dev/null
+    print_success "${S_PARAMS_XML_CONFIGURED_SUCCESS[$LANG_SELECTED]}"
+else
+    print_info "${S_SKIPPING_PARAMS_CONFIG_USER_CHOICE[$LANG_SELECTED]}"
+fi
 
-L_WRITING_PARAMS_XML_TO_FORMATTED=$(printf "${S_WRITING_PARAMS_XML_TO[$LANG_SELECTED]}" "$PARAMETERS_FILE_PATH")
-print_info "$L_WRITING_PARAMS_XML_TO_FORMATTED"
-echo "$PARAMETERS_XML_CONTENT" | sudo tee "$PARAMETERS_FILE_PATH" > /dev/null
-print_success "${S_PARAMS_XML_CONFIGURED_SUCCESS[$LANG_SELECTED]}"
+L_COPYING_BINARIES_FROM_TO_FORMATTED=$(printf "${S_COPYING_BINARIES_FROM_TO[$LANG_SELECTED]}" "$PUBLISHED_ARTIFACTS_PATH" "$DEPLOY_DIR")
+print_info "$L_COPYING_BINARIES_FROM_TO_FORMATTED"
+sudo rsync -av --exclude 'Parameters.xml' "${PUBLISHED_ARTIFACTS_PATH}/" "$DEPLOY_DIR/" 
 
 L_SETTING_FINAL_OWNERSHIP_PERMS_FORMATTED=$(printf "${S_SETTING_FINAL_OWNERSHIP_PERMS[$LANG_SELECTED]}" "$DEPLOY_DIR")
 print_info "$L_SETTING_FINAL_OWNERSHIP_PERMS_FORMATTED"
 sudo chown -R "${SERVICE_USER}:${SERVICE_USER}" "$DEPLOY_DIR"
 sudo chmod +x "${DEPLOY_DIR}/${EXECUTABLE_NAME}"
-sudo chmod 640 "${DEPLOY_DIR}/Parameters.xml"
+if [ -f "$PARAMETERS_FILE_PATH" ]; then 
+    sudo chmod 640 "$PARAMETERS_FILE_PATH"
+fi
 print_success "${S_APP_DEPLOYED_PERMS_SET_SUCCESS[$LANG_SELECTED]}"
 
 SERVICE_FILE_PATH="/etc/systemd/system/${APP_NAME}.service"
