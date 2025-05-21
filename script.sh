@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # Script to compile GbbConnect2.Console, configure Parameters.xml,
-# set it up as a systemd service, and optionally configure auto-updates.
-# Verbose output and user input for configuration.
+# set it up as a systemd service.
+# Supports interactive install, user-triggered update (--update),
+# and silent update (--update-silent).
+# Includes architecture detection for compilation.
 
 # Exit immediately if a command exits with a non-zero status.
 set -e
@@ -39,22 +41,22 @@ if [ "$INTERACTIVE_MODE" = true ]; then
         esac
     done
     echo "---"
-elif [ "$UPDATE_MODE" = true ] && [ "$SILENT_UPDATE_MODE" = false ] && [ -z "$LANG_SELECTED_BY_FLAG" ]; then # LANG_SELECTED_BY_FLAG is not a var, check if LANG_SELECTED is empty
-    if [ -z "$LANG_SELECTED" ]; then 
+elif [ "$UPDATE_MODE" = true ] && [ "$SILENT_UPDATE_MODE" = false ]; then
+    if [ -z "$LANG_SELECTED" ]; then # If not set by --update-silent
       LANG_SELECTED="en"
     fi
 fi
 
 
 # --- Localized Strings ---
-# (Assume ALL S_... declarations from the previous complete script are here)
-# Including the ones for ARM32 but now referencing the new script name/source if needed.
+# (Assume ALL S_... declarations from previous full script are here)
+# Including the new ones for architecture detection:
 declare -A S_BANNER_MADE_BY; S_BANNER_MADE_BY[en]="                                Made by @Sp3nge                               "; S_BANNER_MADE_BY[pl]="                             Stworzone przez @Sp3nge                            "
 declare -A S_WELCOME_TITLE; S_WELCOME_TITLE[en]="GbbConnect2.Console Setup Script"; S_WELCOME_TITLE[pl]="Skrypt Instalacyjny GbbConnect2.Console"
 declare -A S_SCRIPT_GUIDE; S_SCRIPT_GUIDE[en]="This script will guide you through:"; S_SCRIPT_GUIDE[pl]="Ten skrypt przeprowadzi Cię przez:"
 declare -A S_GUIDE_ITEM1; S_GUIDE_ITEM1[en]="1. Installing prerequisites (Git, lsb-release, rsync, .NET SDK)."; S_GUIDE_ITEM1[pl]="1. Instalację wymagań wstępnych (Git, lsb-release, rsync, .NET SDK)."
 declare -A S_GUIDE_ITEM2; S_GUIDE_ITEM2[en]="2. Cloning/Verifying the GbbConnect2 repository."; S_GUIDE_ITEM2[pl]="2. Klonowanie/Weryfikację repozytorium GbbConnect2."
-declare -A S_GUIDE_ITEM3; S_GUIDE_ITEM3[en]="3. Compiling GbbConnect2.Console."; S_GUIDE_ITEM3[pl]="3. Kompilację GbbConnect2.Console."
+declare -A S_GUIDE_ITEM3; S_GUIDE_ITEM3[en]="3. Compiling GbbConnect2.Console for your system architecture."; S_GUIDE_ITEM3[pl]="3. Kompilację GbbConnect2.Console dla architektury Twojego systemu."
 declare -A S_GUIDE_ITEM4; S_GUIDE_ITEM4[en]="4. Configuring Parameters.xml, backing up old versions, and setting up systemd service."; S_GUIDE_ITEM4[pl]="4. Konfigurację Parameters.xml, tworzenie kopii zapasowej starych wersji i ustawianie usługi systemd."
 declare -A S_GUIDE_ITEM5; S_GUIDE_ITEM5[en]="5. Verification and service management."; S_GUIDE_ITEM5[pl]="5. Weryfikację i zarządzanie usługą."
 declare -A S_INFO_PREFIX; S_INFO_PREFIX[en]="[INFO]"; S_INFO_PREFIX[pl]="[INFO]"
@@ -107,15 +109,15 @@ declare -A S_SKIPPING_DOTNET9_UNSUPPORTED_OS; S_SKIPPING_DOTNET9_UNSUPPORTED_OS[
 declare -A S_USING_PPA_FOR_UBUNTU; S_USING_PPA_FOR_UBUNTU[en]="Using Ubuntu PPA method for .NET SDK installation on Ubuntu %s..."; S_USING_PPA_FOR_UBUNTU[pl]="Używanie metody PPA Ubuntu do instalacji .NET SDK na Ubuntu %s..."
 declare -A S_INSTALLING_SOFTWARE_PROPERTIES; S_INSTALLING_SOFTWARE_PROPERTIES[en]="Ensuring 'software-properties-common' is installed for PPA support..."; S_INSTALLING_SOFTWARE_PROPERTIES[pl]="Zapewnianie instalacji 'software-properties-common' dla obsługi PPA..."
 declare -A S_ADDING_PPA_DOTNET_BACKPORTS; S_ADDING_PPA_DOTNET_BACKPORTS[en]="Adding ppa:dotnet/backports repository..."; S_ADDING_PPA_DOTNET_BACKPORTS[pl]="Dodawanie repozytorium ppa:dotnet/backports..."
-declare -A S_DOTNET9_PPA_INSTALL_FAILED; S_DOTNET9_PPA_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from PPA. This might mean it's not yet available in backports for your Ubuntu version, or another issue occurred."; S_DOTNET9_PPA_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z PPA. Może to oznaczać, że nie jest jeszcze dostępny w backports dla Twojej wersji Ubuntu lub wystąpił inny problem." # Removed manual install suggestion here, handled later
+declare -A S_DOTNET9_PPA_INSTALL_FAILED; S_DOTNET9_PPA_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from PPA. This might mean it's not yet available in backports for your Ubuntu version, or another issue occurred."; S_DOTNET9_PPA_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z PPA. Może to oznaczać, że nie jest jeszcze dostępny w backports dla Twojej wersji Ubuntu lub wystąpił inny problem."
 declare -A S_USING_MS_REPO_METHOD; S_USING_MS_REPO_METHOD[en]="Using Microsoft package repository method for .NET SDK installation..."; S_USING_MS_REPO_METHOD[pl]="Używanie metody repozytorium pakietów Microsoft do instalacji .NET SDK..."
-declare -A S_DOTNET9_MSREPO_INSTALL_FAILED; S_DOTNET9_MSREPO_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from Microsoft repository. Please check .NET 9.0 availability for your OS."; S_DOTNET9_MSREPO_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z repozytorium Microsoft. Sprawdź dostępność .NET 9.0 dla swojego systemu." # Removed manual install suggestion here
+declare -A S_DOTNET9_MSREPO_INSTALL_FAILED; S_DOTNET9_MSREPO_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from Microsoft repository. Please check .NET 9.0 availability for your OS."; S_DOTNET9_MSREPO_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z repozytorium Microsoft. Sprawdź dostępność .NET 9.0 dla swojego systemu."
 declare -A S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE; S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[en]="Automatic .NET SDK installation for this OS combination is not fully configured. Please try manual installation or the ARM32 script option if applicable."; S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[pl]="Automatyczna instalacja .NET SDK dla tej kombinacji systemu operacyjnego nie jest w pełni skonfigurowana. Spróbuj instalacji ręcznej lub opcji skryptu ARM32, jeśli dotyczy."
 declare -A S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT; S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[en]="dotnet command not found after installation attempt. .NET SDK installation likely failed."; S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[pl]="Nie znaleziono polecenia dotnet po próbie instalacji. Instalacja .NET SDK prawdopodobnie nie powiodła się."
 declare -A S_ARCH_DETECTED; S_ARCH_DETECTED[en]="Detected system architecture: %s."; S_ARCH_DETECTED[pl]="Wykryta architektura systemu: %s."
 declare -A S_ARM32_DOTNET9_APT_UNAVAILABLE; S_ARM32_DOTNET9_APT_UNAVAILABLE[en]=".NET 9.0 SDK is typically not available via apt on 32-bit ARM systems (like older Raspberry Pis)."; S_ARM32_DOTNET9_APT_UNAVAILABLE[pl]=".NET 9.0 SDK zazwyczaj nie jest dostępny przez apt na systemach ARM 32-bitowych (jak starsze Raspberry Pi)."
-declare -A S_CONFIRM_ARM_INSTALLER_SCRIPT; S_CONFIRM_ARM_INSTALLER_SCRIPT[en]="An alternative installation script for ARM32 systems might work. Do you want to try using this script to install .NET 9.0 SDK?"; S_CONFIRM_ARM_INSTALLER_SCRIPT[pl]="Alternatywny skrypt instalacyjny dla systemów ARM32 może zadziałać. Czy chcesz spróbować użyć tego skryptu do instalacji .NET 9.0 SDK?" # Made generic
-declare -A S_USING_ARM_INSTALLER_SCRIPT; S_USING_ARM_INSTALLER_SCRIPT[en]="Attempting to install .NET 9.0 SDK using the ARM32 installer script..."; S_USING_ARM_INSTALLER_SCRIPT[pl]="Próba instalacji .NET 9.0 SDK za pomocą skryptu instalacyjnego ARM32..."
+declare -A S_CONFIRM_ARM_INSTALLER_SCRIPT; S_CONFIRM_ARM_INSTALLER_SCRIPT[en]="An alternative installation script for ARM32 systems might work. Do you want to try using this script to install .NET 9.0 SDK?"; S_CONFIRM_ARM_INSTALLER_SCRIPT[pl]="Alternatywny skrypt instalacyjny dla systemów ARM32 może zadziałać. Czy chcesz spróbować użyć tego skryptu do instalacji .NET 9.0 SDK?"
+declare -A S_USING_ARM_INSTALLER_SCRIPT; S_USING_ARM_INSTALLER_SCRIPT[en]="Attempting to install .NET 9.0 SDK using the ARM32 installer script from %s..."; S_USING_ARM_INSTALLER_SCRIPT[pl]="Próba instalacji .NET 9.0 SDK za pomocą skryptu instalacyjnego ARM32 z %s..." # %s will be ARM32_DOTNET_INSTALLER_URL
 declare -A S_ARM_INSTALLER_SCRIPT_SUCCESS; S_ARM_INSTALLER_SCRIPT_SUCCESS[en]="ARM32 installer script executed. Please check its output for success. Will now verify 'dotnet' command."; S_ARM_INSTALLER_SCRIPT_SUCCESS[pl]="Skrypt instalacyjny ARM32 został wykonany. Sprawdź jego dane wyjściowe pod kątem powodzenia. Teraz zweryfikujemy polecenie 'dotnet'."
 declare -A S_ARM_INSTALLER_SCRIPT_FAIL; S_ARM_INSTALLER_SCRIPT_FAIL[en]="Execution of the ARM32 installer script failed or was skipped. .NET 9.0 SDK may not be installed."; S_ARM_INSTALLER_SCRIPT_FAIL[pl]="Wykonanie skryptu instalacyjnego ARM32 nie powiodło się lub zostało pominięte. .NET 9.0 SDK może nie być zainstalowany."
 declare -A S_SKIPPING_ARM_INSTALLER_SCRIPT; S_SKIPPING_ARM_INSTALLER_SCRIPT[en]="Skipping ARM32 installer script."; S_SKIPPING_ARM_INSTALLER_SCRIPT[pl]="Pominięcie skryptu instalacyjnego ARM32."
@@ -137,7 +139,7 @@ declare -A S_DOTNET_CMD_ALREADY_IN_PATH; S_DOTNET_CMD_ALREADY_IN_PATH[en]="'dotn
 declare -A S_ESSENTIAL_TOOLS_VERIFY_UPDATE; S_ESSENTIAL_TOOLS_VERIFY_UPDATE[en]="[UPDATE MODE] Verifying essential tools for update..."; S_ESSENTIAL_TOOLS_VERIFY_UPDATE[pl]="[TRYB AKTUALIZACJI] Weryfikacja niezbędnych narzędzi do aktualizacji..."
 declare -A S_ESSENTIAL_TOOLS_MISSING_UPDATE_EXIT; S_ESSENTIAL_TOOLS_MISSING_UPDATE_EXIT[en]="[UPDATE MODE] Essential tools missing. Please run the installer interactively first to install prerequisites."; S_ESSENTIAL_TOOLS_MISSING_UPDATE_EXIT[pl]="[TRYB AKTUALIZACJI] Brakuje niezbędnych narzędzi. Uruchom najpierw instalator interaktywnie, aby zainstalować wymagania wstępne."
 declare -A S_ESSENTIAL_TOOLS_VERIFIED_UPDATE; S_ESSENTIAL_TOOLS_VERIFIED_UPDATE[en]="[UPDATE MODE] Essential tools verified."; S_ESSENTIAL_TOOLS_VERIFIED_UPDATE[pl]="[TRYB AKTUALIZACJI] Niezbędne narzędzia zweryfikowane."
-# (All other S_ variables for Steps 2-5 from previous full script)
+# ... (All other S_ variables for Steps 2-5 from previous full script) ...
 
 # --- Configuration Variables ---
 DEFAULT_CLONE_DIR="$HOME/GbbConnect2_build"
@@ -146,12 +148,13 @@ DEFAULT_DOTNET_SDK_VERSION="9.0"
 DEFAULT_DEPLOY_BASE_DIR="/opt"
 DEFAULT_APP_NAME="gbbconnect2console"
 DEFAULT_SERVICE_USER="gbbconsoleuser"
-DEFAULT_PUBLISH_TARGET_RUNTIME="linux-x64"
+DEFAULT_PUBLISH_TARGET_RUNTIME="linux-x64" # Default, will be overridden by arch detection
 DEFAULT_MQTT_PORT="8883"
-ARM32_DOTNET_INSTALLER_URL="https://raw.githubusercontent.com/Sp3nge/GbbConnect2Console-Installer/refs/heads/main/ARMDotnet.sh"
+ARM32_DOTNET_INSTALLER_URL="https://raw.githubusercontent.com/Sp3nge/GbbConnect2Console-Installer/main/ARMDotnet.sh"
 
 
 # --- Helper Functions ---
+# (Helper functions: print_info, print_success, print_warning, print_error, confirm_action, prompt_with_default, prompt_for_value - same as before, with SILENT_UPDATE_MODE checks)
 print_info() {
     if [ "$SILENT_UPDATE_MODE" = true ]; then return; fi 
     echo -e "\n\033[1;34m${S_INFO_PREFIX[$LANG_SELECTED]}\033[0m $1"
@@ -173,11 +176,11 @@ confirm_action() {
     local prompt_text="$1"
     if [ "$SILENT_UPDATE_MODE" = true ]; then
         if [[ "$prompt_text" == *"${S_CONFIRM_CLEAN_BUILD_ARTIFACTS[$LANG_SELECTED]}"* ]]; then return 0; fi
-        # For ARM32 script confirmation in silent mode, default to yes if this path is reached
-        if [[ "$prompt_text" == *"${S_CONFIRM_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}"* ]]; then return 0; fi
-        # Other confirmations in silent mode should ideally be errors or designed out.
-        # This default 'yes' is a fallback if a confirm_action is unexpectedly hit in silent mode.
-        # print_warning "[SILENT UPDATE] Auto-confirming 'yes' for: $prompt_text"
+        if [[ "$prompt_text" == *"${S_CONFIRM_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}"* ]]; then return 0; fi # Auto-yes to ARM script in silent update
+        # For other confirmations in silent mode, if they are hit, it's likely an unexpected state.
+        # Defaulting to 'yes' might be risky. It's better if silent mode logic avoids generic confirms.
+        # For now, if one is hit, assume yes to proceed, but this indicates a logic path to review.
+        # print_warning "[SILENT UPDATE] Auto-confirming 'yes' for unexpected prompt: $prompt_text"
         return 0 
     fi
     while true; do
@@ -203,7 +206,7 @@ prompt_for_value() {
     local prompt_message="$1"; local variable_name="$2"; local input_value
     if [ "$SILENT_UPDATE_MODE" = true ]; then
         L_SILENT_PROMPT_ERROR_MSG_FORMATTED=$(printf "Attempted to prompt for mandatory value in SILENT mode: %s. This usually means Parameters.xml is missing and cannot be configured non-interactively." "$prompt_message")
-        print_error "$L_SILENT_PROMPT_ERROR_MSG_FORMATTED" # TODO: Localize this internal error message.
+        print_error "$L_SILENT_PROMPT_ERROR_MSG_FORMATTED" 
         exit 1 
     fi
     while true; do
@@ -319,13 +322,16 @@ if [ "$INTERACTIVE_MODE" = true ]; then
                             sudo dpkg -i packages-microsoft-prod.deb; rm packages-microsoft-prod.deb; sudo apt update; sudo apt install -y apt-transport-https; sudo apt update 
                             if ! sudo apt install -y "dotnet-sdk-${DEFAULT_DOTNET_SDK_VERSION}"; then L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED=$(printf "${S_DOTNET9_MSREPO_INSTALL_FAILED[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION"); print_warning "$L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED"; else L_DOTNET_INSTALL_COMPLETE_FORMATTED=$(printf "${S_DOTNET_INSTALL_COMPLETE[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION"); print_success "$L_DOTNET_INSTALL_COMPLETE_FORMATTED"; DOTNET_INSTALL_SUCCESSFUL=true; fi
                         else print_error "${S_DOWNLOAD_PKG_FAIL[$LANG_SELECTED]}"; print_warning "${S_DOTNET_SKIPPING_INSTALL[$LANG_SELECTED]}"; fi
-                    elif [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ]; then print_warning "${S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[$LANG_SELECTED]}"; fi
+                    elif [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ] && ! ( [[ "$ARCH" == "armv7l" || "$ARCH" == "armhf" ]] ) ; then # If not ARM32 and other methods didn't apply
+                        print_warning "${S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[$LANG_SELECTED]}"
+                    fi
 
                     if [ "$DOTNET_INSTALL_SUCCESSFUL" = false ] && [[ "$ARCH" == "armv7l" || "$ARCH" == "armhf" ]]; then
                         print_info "${S_ARM32_DOTNET9_APT_UNAVAILABLE[$LANG_SELECTED]}"
                         if confirm_action "${S_CONFIRM_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}"; then
-                            print_info "${S_USING_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}"
-                            if wget -O - "$ARM32_DOTNET_INSTALLER_URL" | sudo bash; then # Using variable for URL
+                            L_USING_ARM_INSTALLER_SCRIPT_FORMATTED=$(printf "${S_USING_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}" "$ARM32_DOTNET_INSTALLER_URL")
+                            print_info "$L_USING_ARM_INSTALLER_SCRIPT_FORMATTED"
+                            if wget -O - "$ARM32_DOTNET_INSTALLER_URL" | sudo bash; then
                                 print_success "${S_ARM_INSTALLER_SCRIPT_SUCCESS[$LANG_SELECTED]}"; DOTNET_INSTALL_SUCCESSFUL=true
                             else print_error "${S_ARM_INSTALLER_SCRIPT_FAIL[$LANG_SELECTED]}"; fi
                         else print_info "${S_SKIPPING_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}"; fi
@@ -334,6 +340,7 @@ if [ "$INTERACTIVE_MODE" = true ]; then
                     fi
                 fi 
                 
+                # Final verification block after all install attempts
                 if [ "$DOTNET_INSTALL_SUCCESSFUL" = true ]; then
                     print_info "${S_DOTNET_VERIFYING_INSTALL[$LANG_SELECTED]}"
                     if [ -f /etc/profile ]; then . /etc/profile; fi; if [ -f "$HOME/.bashrc" ]; then . "$HOME/.bashrc"; fi; if [ -f "$HOME/.profile" ]; then . "$HOME/.profile"; fi
@@ -376,16 +383,13 @@ fi
 print_info "${S_ENSURING_DOTNET_IN_PATH[$LANG_SELECTED]}"
 if ! command -v dotnet &> /dev/null; then
     print_warning "${S_DOTNET_CMD_NOT_IN_PATH_WARN[$LANG_SELECTED]}"
-    DOTNET_PATHS=( "/usr/share/dotnet" "/usr/local/share/dotnet" "$HOME/dotnet" "/opt/dotnet" ) # Common paths
-    # For ARM32 installs via scripts like Pete's or yours, it often goes to /usr/local/share/dotnet or /opt/dotnet
-    # Or directly into /usr/bin if installed system-wide by such a script.
-    # The install.sh script from dotnet9pi by default installs to /usr/share/dotnet and symlinks to /usr/bin/dotnet
+    DOTNET_PATHS=( "/usr/share/dotnet" "/usr/local/share/dotnet" "$HOME/dotnet" "/opt/dotnet" "/usr/bin" ) # Added /usr/bin as some installers symlink there
     FOUND_DOTNET_IN_COMMON_PATHS=false
     for p in "${DOTNET_PATHS[@]}"; do
         if [ -x "${p}/dotnet" ]; then
             L_FOUND_DOTNET_AT_ADDING_TO_PATH_FORMATTED=$(printf "${S_FOUND_DOTNET_AT_ADDING_TO_PATH[$LANG_SELECTED]}" "$p")
             print_info "$L_FOUND_DOTNET_AT_ADDING_TO_PATH_FORMATTED"
-            export PATH="$p:$PATH" # Temporarily add to PATH for this script session
+            export PATH="$p:$PATH" 
             FOUND_DOTNET_IN_COMMON_PATHS=true; break
         fi
     done
@@ -394,11 +398,36 @@ if ! command -v dotnet &> /dev/null; then
         print_info "${S_DOTNET_MANUAL_PATH_INSTRUCTION[$LANG_SELECTED]}"
     else
         if command -v dotnet &> /dev/null; then print_success "${S_DOTNET_CMD_NOW_IN_PATH[$LANG_SELECTED]}"; dotnet --version;
-        else print_error "${S_DOTNET_CMD_PATH_ADD_FAILED[$LANG_SELECTED]}"; fi # Should not happen
+        else print_error "${S_DOTNET_CMD_PATH_ADD_FAILED[$LANG_SELECTED]}"; fi 
     fi
 else
     print_info "${S_DOTNET_CMD_ALREADY_IN_PATH[$LANG_SELECTED]}"; dotnet --version
 fi
+echo "---"
+
+# --- Determine Target Runtime for Publishing ---
+# This block is new and placed before compilation
+print_info "${S_DETECTING_ARCHITECTURE[$LANG_SELECTED]}"
+MACHINE_ARCH=$(uname -m)
+L_ARCH_DETECTED_MSG_FORMATTED_COMPILE=$(printf "${S_ARCH_DETECTED[$LANG_SELECTED]}" "$MACHINE_ARCH") # Use a different temp var name
+print_info "$L_ARCH_DETECTED_MSG_FORMATTED_COMPILE"
+
+TARGET_RUNTIME_FOR_PUBLISH="" # Use a specific variable for publish RID
+case "$MACHINE_ARCH" in
+    "x86_64" | "amd64")
+        TARGET_RUNTIME_FOR_PUBLISH="linux-x64" ;;
+    "armv7l" | "armhf") 
+        TARGET_RUNTIME_FOR_PUBLISH="linux-arm" 
+        print_warning "${S_ARM32_PERFORMANCE_NOTE[$LANG_SELECTED]}" ;;
+    "aarch64" | "arm64") 
+        TARGET_RUNTIME_FOR_PUBLISH="linux-arm64" ;;
+    *)
+        L_UNKNOWN_ARCH_DEFAULTING_X64_FORMATTED=$(printf "${S_UNKNOWN_ARCH_DEFAULTING_X64[$LANG_SELECTED]}" "$MACHINE_ARCH" "$DEFAULT_PUBLISH_TARGET_RUNTIME")
+        print_warning "$L_UNKNOWN_ARCH_DEFAULTING_X64_FORMATTED"
+        TARGET_RUNTIME_FOR_PUBLISH="$DEFAULT_PUBLISH_TARGET_RUNTIME" ;;
+esac
+L_USING_DOTNET_RID_FORMATTED=$(printf "${S_USING_DOTNET_RID[$LANG_SELECTED]}" "$TARGET_RUNTIME_FOR_PUBLISH")
+print_info "$L_USING_DOTNET_RID_FORMATTED"
 echo "---"
 # --- End of Part 1 ---
 # --- Continuation of Script: Part 2 ---
@@ -476,7 +505,6 @@ fi
 echo "---"
 
 # --- 3. Compile Application ---
-# (This section remains the same as the last complete script you approved)
 print_info "${S_STEP3_TITLE[$LANG_SELECTED]}"
 CONSOLE_PROJECT_PATH="${CLONE_DIR}/${DEFAULT_CONSOLE_PROJECT_SUBDIR}"
 PUBLISH_OUTPUT_DIR_NAME="publish_output_self_contained"
@@ -501,15 +529,15 @@ if [ "$UPDATE_MODE" = true ] || confirm_action "$L_CONFIRM_CLEAN_BUILD_ARTIFACTS
     print_info "${S_CLEANING_BUILD_ARTIFACTS[$LANG_SELECTED]}"; rm -rf ./bin ./obj "./${PUBLISH_OUTPUT_DIR_NAME}"
 fi
 
-L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED=$(printf "${S_PUBLISHING_APP_FOR_RUNTIME[$LANG_SELECTED]}" "$DEFAULT_PUBLISH_TARGET_RUNTIME"); print_info "$L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED"
-if dotnet publish -c Release -r "${DEFAULT_PUBLISH_TARGET_RUNTIME}" --self-contained true -o "./${PUBLISH_OUTPUT_DIR_NAME}" /p:PublishSingleFile=true; then
+L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED=$(printf "${S_PUBLISHING_APP_FOR_RUNTIME[$LANG_SELECTED]}" "$TARGET_RUNTIME_FOR_PUBLISH"); print_info "$L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED" # Use TARGET_RUNTIME_FOR_PUBLISH
+if dotnet publish -c Release -r "${TARGET_RUNTIME_FOR_PUBLISH}" --self-contained true -o "./${PUBLISH_OUTPUT_DIR_NAME}" /p:PublishSingleFile=true; then # Use TARGET_RUNTIME_FOR_PUBLISH
     L_APP_PUBLISHED_TO_FORMATTED=$(printf "${S_APP_PUBLISHED_TO[$LANG_SELECTED]}" "$PUBLISHED_ARTIFACTS_PATH"); print_success "$L_APP_PUBLISHED_TO_FORMATTED"
 else print_error "${S_DOTNET_PUBLISH_FAILED[$LANG_SELECTED]}"; exit 1; fi
 cd - > /dev/null
 echo "---"
 
 # --- 4. Systemd Service Setup (Includes Backup, Parameters.xml Handling, and Generation) ---
-# (This section remains the same as the last complete script you approved)
+# (This section remains the same as the last complete script you approved for Step 4)
 print_info "${S_STEP4_TITLE[$LANG_SELECTED]}" 
 
 if [ "$INTERACTIVE_MODE" = true ]; then
@@ -585,7 +613,7 @@ EOF
 else 
     if [ "$UPDATE_MODE" = true ]; then
         L_PRESERVING_PARAMS_XML_UPDATE_FORMATTED=$(printf "${S_PRESERVING_PARAMS_XML_UPDATE[$LANG_SELECTED]}" "$PARAMETERS_FILE_PATH"); print_info "$L_PRESERVING_PARAMS_XML_UPDATE_FORMATTED"
-    elif [ "$INTERACTIVE_MODE" = true ]; then # This means user chose 'N' to reconfigure
+    elif [ "$INTERACTIVE_MODE" = true ]; then 
         print_info "${S_SKIPPING_PARAMS_CONFIG_USER_CHOICE[$LANG_SELECTED]}"
     fi
 fi
@@ -641,7 +669,6 @@ L_SERVICE_ENABLED_STARTED_SUCCESS_FORMATTED=$(printf "${S_SERVICE_ENABLED_STARTE
 echo "---"
 
 # --- 5. Verification ---
-# No Auto Update Setup section anymore
 print_info "${S_STEP5_TITLE[$LANG_SELECTED]}"
 L_SERVICE_SHOULD_BE_RUNNING_FORMATTED=$(printf "${S_SERVICE_SHOULD_BE_RUNNING[$LANG_SELECTED]}" "$APP_NAME"); echo "$L_SERVICE_SHOULD_BE_RUNNING_FORMATTED"
 
@@ -652,6 +679,7 @@ if [ "$INTERACTIVE_MODE" = true ]; then
     echo "${S_TO_MANAGE_SERVICE[$LANG_SELECTED]}"
     echo "  ${S_SERVICE_STOP[$LANG_SELECTED]}:    sudo systemctl stop ${APP_NAME}.service"; echo "  ${S_SERVICE_START[$LANG_SELECTED]}:   sudo systemctl start ${APP_NAME}.service"
     echo "  ${S_SERVICE_RESTART[$LANG_SELECTED]}: sudo systemctl restart ${APP_NAME}.service"; echo "  ${S_SERVICE_DISABLE_AUTOSTART[$LANG_SELECTED]}: sudo systemctl disable ${APP_NAME}.service"; echo ""
+    # Removed the cron setup offering from here
     echo "---" 
 fi
 
@@ -659,8 +687,7 @@ if [ "$UPDATE_MODE" = true ]; then
     if [ "$SILENT_UPDATE_MODE" = false ]; then 
         L_UPDATE_SERVICE_ACTIVE_FORMATTED=$(printf "${S_UPDATE_SERVICE_ACTIVE[$LANG_SELECTED]}" "$APP_NAME")
         L_UPDATE_SERVICE_NOT_ACTIVE_FORMATTED=$(printf "${S_UPDATE_SERVICE_NOT_ACTIVE[$LANG_SELECTED]}" "$APP_NAME" "$APP_NAME")
-        # Using a generic verification message string, as essential tools were already verified
-        L_VERIFYING_UPDATE_MSG_FORMATTED=$(printf "${S_INFO_PREFIX[$LANG_SELECTED]} Verifying service status after update...") # TODO: Create a new S_ string for this
+        L_VERIFYING_UPDATE_MSG_FORMATTED=$(printf "${S_INFO_PREFIX[$LANG_SELECTED]} Verifying service status after update...") # Using direct string for now
         echo -e "\n$L_VERIFYING_UPDATE_MSG_FORMATTED"
 
         if sudo systemctl is-active --quiet "${APP_NAME}.service"; then print_success "$L_UPDATE_SERVICE_ACTIVE_FORMATTED"; else print_error "$L_UPDATE_SERVICE_NOT_ACTIVE_FORMATTED"; fi
@@ -668,6 +695,9 @@ if [ "$UPDATE_MODE" = true ]; then
 fi
 
 if [ "$SILENT_UPDATE_MODE" = true ]; then
+    # In silent mode, final success is usually logged by the calling script (e.g. cron checker)
+    # This script might log to its own silent update log if configured.
+    # For now, print_success here will be suppressed by its own internal check.
     print_success "${S_UPDATE_SILENT_FINISHED[$LANG_SELECTED]}" 
 elif [ "$UPDATE_MODE" = true ]; then
     print_success "${S_UPDATE_USER_TRIGGERED_FINISHED[$LANG_SELECTED]}"
