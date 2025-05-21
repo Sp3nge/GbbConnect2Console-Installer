@@ -9,26 +9,26 @@
 # Exit immediately if a command exits with a non-zero status.
 set -e
 
-# --- Mode Detection ---
+# --- Early Initialization of Mode and Language ---
 UPDATE_MODE=false
 SILENT_UPDATE_MODE=false
-INTERACTIVE_MODE=true 
+INTERACTIVE_MODE=true
+LANG_SELECTED="en" # Absolute default before anything else
 
 if [[ "$1" == "--update-silent" ]] || [[ "$1" == "--auto-update" ]]; then
     SILENT_UPDATE_MODE=true
     UPDATE_MODE=true 
     INTERACTIVE_MODE=false
-    LANG_SELECTED="en" 
-    echo "[INFO] Running in SILENT Automated Update Mode." 
+    # LANG_SELECTED remains "en" for silent mode logging
+    echo "[SETUP] Running in SILENT Automated Update Mode." # Raw echo, no localization yet
 elif [[ "$1" == "--update" ]]; then
     UPDATE_MODE=true
     INTERACTIVE_MODE=false 
-    echo "[INFO] Running in User-Triggered Update Mode." 
+    echo "[SETUP] Running in User-Triggered Update Mode." # Raw echo
+    # Language will be prompted or defaulted later if this mode is somehow non-interactive
 fi
 
-# --- Language Selection ---
 if [ "$INTERACTIVE_MODE" = true ]; then
-    LANG_SELECTED="en" 
     echo "Please select your language / Proszę wybrać język:"
     echo "1. English"
     echo "2. Polski"
@@ -41,20 +41,19 @@ if [ "$INTERACTIVE_MODE" = true ]; then
         esac
     done
     echo "---"
-elif [ "$UPDATE_MODE" = true ] && [ "$SILENT_UPDATE_MODE" = false ]; then
-    if [ -z "$LANG_SELECTED" ]; then # If not set by --update-silent
-      LANG_SELECTED="en"
-    fi
+elif [ "$UPDATE_MODE" = true ] && [ "$SILENT_UPDATE_MODE" = false ] && [ -z "$LANG_SELECTED_FORCED" ]; then
+    # This handles --update (not silent) if it was called non-interactively by something
+    # Forcing English for logs in this less common scenario.
+    LANG_SELECTED="en"
 fi
 
-
-# --- Localized Strings ---
-# (Assume ALL S_... declarations from previous full script are here)
-# Including the new ones for architecture detection:
+# --- NOW All Localized Strings are Declared ---
+# (All your 'declare -A S_...' lines go here. Ensure they are complete from your master list)
+# For this example, I'm putting a few critical ones. You MUST include ALL of them from your previous script.
 declare -A S_BANNER_MADE_BY; S_BANNER_MADE_BY[en]="                                Made by @Sp3nge                               "; S_BANNER_MADE_BY[pl]="                             Stworzone przez @Sp3nge                            "
 declare -A S_WELCOME_TITLE; S_WELCOME_TITLE[en]="GbbConnect2.Console Setup Script"; S_WELCOME_TITLE[pl]="Skrypt Instalacyjny GbbConnect2.Console"
 declare -A S_SCRIPT_GUIDE; S_SCRIPT_GUIDE[en]="This script will guide you through:"; S_SCRIPT_GUIDE[pl]="Ten skrypt przeprowadzi Cię przez:"
-declare -A S_GUIDE_ITEM1; S_GUIDE_ITEM1[en]="1. Installing prerequisites (Git, lsb-release, rsync, .NET SDK)."; S_GUIDE_ITEM1[pl]="1. Instalację wymagań wstępnych (Git, lsb-release, rsync, .NET SDK)."
+declare -A S_GUIDE_ITEM1; S_GUIDE_ITEM1[en]="1. Installing prerequisites (Git, lsb-release, rsync, libicu-dev, .NET SDK)."; S_GUIDE_ITEM1[pl]="1. Instalację wymagań wstępnych (Git, lsb-release, rsync, libicu-dev, .NET SDK)."
 declare -A S_GUIDE_ITEM2; S_GUIDE_ITEM2[en]="2. Cloning/Verifying the GbbConnect2 repository."; S_GUIDE_ITEM2[pl]="2. Klonowanie/Weryfikację repozytorium GbbConnect2."
 declare -A S_GUIDE_ITEM3; S_GUIDE_ITEM3[en]="3. Compiling GbbConnect2.Console for your system architecture."; S_GUIDE_ITEM3[pl]="3. Kompilację GbbConnect2.Console dla architektury Twojego systemu."
 declare -A S_GUIDE_ITEM4; S_GUIDE_ITEM4[en]="4. Configuring Parameters.xml, backing up old versions, and setting up systemd service."; S_GUIDE_ITEM4[pl]="4. Konfigurację Parameters.xml, tworzenie kopii zapasowej starych wersji i ustawianie usługi systemd."
@@ -68,6 +67,10 @@ declare -A S_INVALID_INPUT_CONFIRM; S_INVALID_INPUT_CONFIRM[en]="Invalid input. 
 declare -A S_FIELD_CANNOT_BE_EMPTY; S_FIELD_CANNOT_BE_EMPTY[en]="This field cannot be empty."; S_FIELD_CANNOT_BE_EMPTY[pl]="To pole nie może być puste."
 declare -A S_STEP1_TITLE; S_STEP1_TITLE[en]="Step 1: Checking and Installing Prerequisites"; S_STEP1_TITLE[pl]="Krok 1: Sprawdzanie i Instalowanie Wymagań Wstępnych"
 declare -A S_CONFIRM_PREREQUISITES; S_CONFIRM_PREREQUISITES[en]="Do you want to check/install Git, lsb-release, rsync, libicu-dev, and .NET SDK"; S_CONFIRM_PREREQUISITES[pl]="Czy chcesz sprawdzić/zainstalować Git, lsb-release, rsync, libicu-dev oraz .NET SDK"
+declare -A S_PREREQ_ESSENTIAL_EXIT; S_PREREQ_ESSENTIAL_EXIT[en]="Prerequisites are essential. Exiting."; S_PREREQ_ESSENTIAL_EXIT[pl]="Wymagania wstępne są niezbędne. Zamykanie."
+declare -A S_PREREQ_SKIPPING_ALL; S_PREREQ_SKIPPING_ALL[en]="Skipping prerequisite installation. Please ensure Git, lsb-release, rsync, libicu-dev, and .NET SDK %s are installed."; S_PREREQ_SKIPPING_ALL[pl]="Pominięcie instalacji wymagań wstępnych. Upewnij się, że Git, lsb-release, rsync, libicu-dev oraz .NET SDK %s są zainstalowane."
+# --- ADD ALL OTHER S_... DECLARATIONS HERE FROM YOUR PREVIOUS MASTER SCRIPT ---
+# Make sure every S_ variable used later is defined here.
 declare -A S_UPDATING_PACKAGES; S_UPDATING_PACKAGES[en]="Updating package lists..."; S_UPDATING_PACKAGES[pl]="Aktualizowanie list pakietów..."
 declare -A S_GIT_NOT_FOUND; S_GIT_NOT_FOUND[en]="Git not found. Installing Git..."; S_GIT_NOT_FOUND[pl]="Nie znaleziono Git. Instalowanie Git..."
 declare -A S_GIT_INSTALLED_SUCCESS; S_GIT_INSTALLED_SUCCESS[en]="Git installed."; S_GIT_INSTALLED_SUCCESS[pl]="Git zainstalowany."
@@ -81,10 +84,11 @@ declare -A S_RSYNC_ALREADY_INSTALLED; S_RSYNC_ALREADY_INSTALLED[en]="'rsync' is 
 declare -A S_LIBICU_NOT_FOUND; S_LIBICU_NOT_FOUND[en]="'libicu' (or its development package like libicu-dev) not found. Attempting to install libicu-dev..."; S_LIBICU_NOT_FOUND[pl]="Nie znaleziono 'libicu' (lub jego pakietu deweloperskiego np. libicu-dev). Próba instalacji libicu-dev..."
 declare -A S_LIBICU_INSTALLED_SUCCESS; S_LIBICU_INSTALLED_SUCCESS[en]="'libicu-dev' package installation attempted."; S_LIBICU_INSTALLED_SUCCESS[pl]="Podjęto próbę instalacji pakietu 'libicu-dev'."
 declare -A S_LIBICU_ALREADY_INSTALLED; S_LIBICU_ALREADY_INSTALLED[en]="'libicu' (or development package) seems already installed."; S_LIBICU_ALREADY_INSTALLED[pl]="'libicu' (lub pakiet deweloperski) wydaje się już zainstalowany."
+declare -A S_ARCH_DETECTED; S_ARCH_DETECTED[en]="Detected system architecture: %s."; S_ARCH_DETECTED[pl]="Wykryta architektura systemu: %s."
 declare -A S_DOTNET_ALREADY_INSTALLED_MSG; S_DOTNET_ALREADY_INSTALLED_MSG[en]=".NET SDK version %s.x seems to be already installed."; S_DOTNET_ALREADY_INSTALLED_MSG[pl]="Wygląda na to, że .NET SDK w wersji %s.x jest już zainstalowany."
 declare -A S_DOTNET_CONFIRM_REINSTALL_MSG; S_DOTNET_CONFIRM_REINSTALL_MSG[en]="Do you want to proceed with .NET SDK installation/update anyway?"; S_DOTNET_CONFIRM_REINSTALL_MSG[pl]="Czy chcesz kontynuować instalację/aktualizację .NET SDK mimo to?"
 declare -A S_DOTNET_NOT_FOUND_MSG; S_DOTNET_NOT_FOUND_MSG[en]=".NET SDK %s not found or a different major version is primary."; S_DOTNET_NOT_FOUND_MSG[pl]="Nie znaleziono .NET SDK %s lub główna wersja jest inna."
-declare -A S_DOTNET_INSTALLING_MSG; S_DOTNET_INSTALLING_MSG[en]="Installing .NET SDK %s (for Debian/Ubuntu)..."; S_DOTNET_INSTALLING_MSG[pl]="Instalowanie .NET SDK %s (dla Debian/Ubuntu)..."
+declare -A S_DOTNET_INSTALLING_MSG; S_DOTNET_INSTALLING_MSG[en]="Installing .NET SDK %s..."; S_DOTNET_INSTALLING_MSG[pl]="Instalowanie .NET SDK %s..."
 declare -A S_LSB_RELEASE_UNAVAILABLE_MANUAL_PROMPT; S_LSB_RELEASE_UNAVAILABLE_MANUAL_PROMPT[en]="'lsb-release' is not available. You may need to input your OS version manually."; S_LSB_RELEASE_UNAVAILABLE_MANUAL_PROMPT[pl]="Polecenie 'lsb-release' nie jest dostępne. Może być konieczne ręczne wprowadzenie wersji systemu operacyjnego."
 declare -A S_OS_VERSION_AUTO_DETECT_FAIL_PROMPT; S_OS_VERSION_AUTO_DETECT_FAIL_PROMPT[en]="Could not automatically detect OS version. Do you want to try to proceed by manually entering your Debian/Ubuntu version (e.g., 11, 12 for Debian; 20.04, 22.04 for Ubuntu)?"; S_OS_VERSION_AUTO_DETECT_FAIL_PROMPT[pl]="Nie można automatycznie wykryć wersji systemu. Czy chcesz spróbować kontynuować, wprowadzając ręcznie wersję Debian/Ubuntu (np. 11, 12 dla Debiana; 20.04, 22.04 dla Ubuntu)?"
 declare -A S_OS_VERSION_PROMPT; S_OS_VERSION_PROMPT[en]="Enter your OS version"; S_OS_VERSION_PROMPT[pl]="Wprowadź wersję swojego systemu operacyjnego"
@@ -92,41 +96,36 @@ declare -A S_NO_OS_VERSION_ENTERED_ABORT; S_NO_OS_VERSION_ENTERED_ABORT[en]="No 
 declare -A S_ABORT_NO_OS_VERSION; S_ABORT_NO_OS_VERSION[en]="Aborting .NET SDK installation as OS version is unknown."; S_ABORT_NO_OS_VERSION[pl]="Przerywanie instalacji .NET SDK, ponieważ wersja systemu jest nieznana."
 declare -A S_USING_OS_VERSION_FOR_SETUP; S_USING_OS_VERSION_FOR_SETUP[en]="Using OS version: %s for .NET SDK repository setup."; S_USING_OS_VERSION_FOR_SETUP[pl]="Używanie wersji systemu: %s do konfiguracji repozytorium .NET SDK."
 declare -A S_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN; S_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN[en]="Could not reliably determine if OS is Debian or Ubuntu. Assuming Debian structure for .NET repo URL."; S_OS_TYPE_DETERMINE_FAIL_ASSUME_DEBIAN[pl]="Nie można wiarygodnie określić, czy system to Debian czy Ubuntu. Przyjmowanie struktury Debiana dla adresu URL repozytorium .NET."
-declare -A S_ATTEMPTING_DOWNLOAD_FROM; S_ATTEMPTING_DOWNLOAD_FROM[en]="Attempting to download from: %s"; S_ATTEMPTING_DOWNLOAD_FROM[pl]="Próba pobrania z: %s"
+declare -A S_UBUNTU_2004_EOL_WARNING; S_UBUNTU_2004_EOL_WARNING[en]="WARNING: Ubuntu 20.04 EOL April 2025. .NET 9 is NOT supported. Upgrade OS recommended."; S_UBUNTU_2004_EOL_WARNING[pl]="OSTRZEŻENIE: Ubuntu 20.04 EOL kwiecień 2025. .NET 9 NIE jest wspierany. Zalecana aktualizacja systemu."
+declare -A S_DEBIAN_10_EOL_WARNING; S_DEBIAN_10_EOL_WARNING[en]="WARNING: Debian 10 (Buster) EOL June 2024. .NET 9 is NOT supported. Upgrade OS recommended."; S_DEBIAN_10_EOL_WARNING[pl]="OSTRZEŻENIE: Debian 10 (Buster) EOL czerwiec 2024. .NET 9 NIE jest wspierany. Zalecana aktualizacja systemu."
+declare -A S_CONFIRM_DOTNET9_ON_UNSUPPORTED_OS; S_CONFIRM_DOTNET9_ON_UNSUPPORTED_OS[en]="Attempt .NET 9.0 install on this unsupported OS (likely to fail)?"; S_CONFIRM_DOTNET9_ON_UNSUPPORTED_OS[pl]="Podjąć próbę instalacji .NET 9.0 na tej niewspieranej wersji systemu (prawdopodobnie się nie uda)?"
+declare -A S_SKIPPING_DOTNET9_UNSUPPORTED_OS; S_SKIPPING_DOTNET9_UNSUPPORTED_OS[en]="Skipping .NET 9.0 installation due to OS/user choice."; S_SKIPPING_DOTNET9_UNSUPPORTED_OS[pl]="Pominięcie instalacji .NET 9.0 z powodu ograniczeń systemu/wyboru użytkownika."
+declare -A S_USING_PPA_FOR_UBUNTU; S_USING_PPA_FOR_UBUNTU[en]="Using Ubuntu PPA for .NET SDK on Ubuntu %s..."; S_USING_PPA_FOR_UBUNTU[pl]="Używanie PPA Ubuntu dla .NET SDK na Ubuntu %s..."
+declare -A S_INSTALLING_SOFTWARE_PROPERTIES; S_INSTALLING_SOFTWARE_PROPERTIES[en]="Ensuring 'software-properties-common' for PPA..."; S_INSTALLING_SOFTWARE_PROPERTIES[pl]="Zapewnianie 'software-properties-common' dla PPA..."
+declare -A S_ADDING_PPA_DOTNET_BACKPORTS; S_ADDING_PPA_DOTNET_BACKPORTS[en]="Adding ppa:dotnet/backports..."; S_ADDING_PPA_DOTNET_BACKPORTS[pl]="Dodawanie ppa:dotnet/backports..."
+declare -A S_DOTNET9_PPA_INSTALL_FAILED; S_DOTNET9_PPA_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from PPA."; S_DOTNET9_PPA_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z PPA."
+declare -A S_USING_MS_REPO_METHOD; S_USING_MS_REPO_METHOD[en]="Using Microsoft package repository for .NET SDK..."; S_USING_MS_REPO_METHOD[pl]="Używanie repozytorium Microsoft dla .NET SDK..."
+declare -A S_ATTEMPTING_DOWNLOAD_FROM; S_ATTEMPTING_DOWNLOAD_FROM[en]="Attempting download from: %s"; S_ATTEMPTING_DOWNLOAD_FROM[pl]="Próba pobrania z: %s"
+declare -A S_DOWNLOAD_PKG_FAIL; S_DOWNLOAD_PKG_FAIL[en]="Failed to download packages-microsoft-prod.deb."; S_DOWNLOAD_PKG_FAIL[pl]="Nie udało się pobrać packages-microsoft-prod.deb."
+declare -A S_DOTNET9_MSREPO_INSTALL_FAILED; S_DOTNET9_MSREPO_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from Microsoft repo."; S_DOTNET9_MSREPO_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z repozytorium Microsoft."
+declare -A S_ARM32_DOTNET9_APT_UNAVAILABLE; S_ARM32_DOTNET9_APT_UNAVAILABLE[en]=".NET 9.0 SDK not typically via apt on 32-bit ARM."; S_ARM32_DOTNET9_APT_UNAVAILABLE[pl]=".NET 9.0 SDK zwykle niedostępny przez apt na ARM32."
+declare -A S_CONFIRM_ARM_INSTALLER_SCRIPT; S_CONFIRM_ARM_INSTALLER_SCRIPT[en]="Try alternative ARM32 .NET 9.0 SDK installer script?"; S_CONFIRM_ARM_INSTALLER_SCRIPT[pl]="Spróbować alternatywnego skryptu instalacyjnego .NET 9.0 SDK dla ARM32?"
+declare -A S_USING_ARM_INSTALLER_SCRIPT; S_USING_ARM_INSTALLER_SCRIPT[en]="Attempting .NET 9.0 SDK install via ARM32 script from %s..."; S_USING_ARM_INSTALLER_SCRIPT[pl]="Próba instalacji .NET 9.0 SDK skryptem ARM32 z %s..."
+declare -A S_ARM_INSTALLER_SCRIPT_SUCCESS; S_ARM_INSTALLER_SCRIPT_SUCCESS[en]="ARM32 installer script executed. Check output. Verifying dotnet..."; S_ARM_INSTALLER_SCRIPT_SUCCESS[pl]="Skrypt ARM32 wykonany. Sprawdź wynik. Weryfikacja dotnet..."
+declare -A S_ARM_INSTALLER_SCRIPT_FAIL; S_ARM_INSTALLER_SCRIPT_FAIL[en]="ARM32 installer script failed/skipped. .NET 9.0 may not be installed."; S_ARM_INSTALLER_SCRIPT_FAIL[pl]="Skrypt ARM32 nie powiódł się/pominięty. .NET 9.0 może nie być zainstalowany."
+declare -A S_DOTNET9_ALL_METHODS_FAILED; S_DOTNET9_ALL_METHODS_FAILED[en]="Failed to install .NET SDK %s using available methods. Manual install required. See: https://dotnet.microsoft.com/download/dotnet/9.0"; S_DOTNET9_ALL_METHODS_FAILED[pl]="Nie udało się zainstalować .NET SDK %s dostępnymi metodami. Wymagana instalacja ręczna. Zobacz: https://dotnet.microsoft.com/download/dotnet/9.0"
 declare -A S_DOTNET_INSTALL_COMPLETE; S_DOTNET_INSTALL_COMPLETE[en]=".NET SDK %s installation process completed."; S_DOTNET_INSTALL_COMPLETE[pl]="Proces instalacji .NET SDK %s zakończony."
 declare -A S_DOTNET_VERIFYING_INSTALL; S_DOTNET_VERIFYING_INSTALL[en]="Verifying .NET SDK installation..."; S_DOTNET_VERIFYING_INSTALL[pl]="Weryfikowanie instalacji .NET SDK..."
-declare -A S_DOWNLOAD_PKG_FAIL; S_DOWNLOAD_PKG_FAIL[en]="Failed to download packages-microsoft-prod.deb. Please check the URL and your network connection."; S_DOWNLOAD_PKG_FAIL[pl]="Nie udało się pobrać packages-microsoft-prod.deb. Sprawdź adres URL i połączenie sieciowe."
-declare -A S_DOTNET_SKIPPING_INSTALL; S_DOTNET_SKIPPING_INSTALL[en]="Skipping .NET SDK installation."; S_DOTNET_SKIPPING_INSTALL[pl]="Pominięcie instalacji .NET SDK."
+declare -A S_ICU_CHECK_WARN; S_ICU_CHECK_WARN[en]="ICU libraries might be missing. 'dotnet --version' could fail. Install 'libicu-dev'."; S_ICU_CHECK_WARN[pl]="Może brakować bibliotek ICU. 'dotnet --version' może się nie udać. Zainstaluj 'libicu-dev'."
+declare -A S_DOTNET_CMD_FUNCTIONAL; S_DOTNET_CMD_FUNCTIONAL[en]="'dotnet' command functional."; S_DOTNET_CMD_FUNCTIONAL[pl]="Polecenie 'dotnet' działa."
+declare -A S_DOTNET_WRONG_VERSION_WARN; S_DOTNET_WRONG_VERSION_WARN[en]="Installed 'dotnet' is not %s. Compilation may fail."; S_DOTNET_WRONG_VERSION_WARN[pl]="Zainstalowany 'dotnet' to nie %s. Kompilacja może się nie udać."
+declare -A S_DOTNET_CORRECT_VERSION_OK; S_DOTNET_CORRECT_VERSION_OK[en]=".NET SDK %s seems correctly installed and active."; S_DOTNET_CORRECT_VERSION_OK[pl]=".NET SDK %s wydaje się poprawnie zainstalowany i aktywny."
+declare -A S_DOTNET_VERSION_FAILED_BROKEN_ICU; S_DOTNET_VERSION_FAILED_BROKEN_ICU[en]="'dotnet --version' failed. .NET install likely broken or missing ICU. Resolve manually."; S_DOTNET_VERSION_FAILED_BROKEN_ICU[pl]="'dotnet --version' nie powiodło się. Instalacja .NET prawdopodobnie uszkodzona lub brakuje ICU. Rozwiąż ręcznie."
+declare -A S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT; S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[en]="'dotnet' command not found after install attempt. SDK install likely failed."; S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[pl]="Nie znaleziono 'dotnet' po próbie instalacji. Instalacja SDK prawdopodobnie nie powiodła się."
+declare -A S_DOTNET_SKIPPING_UPDATE; S_DOTNET_SKIPPING_UPDATE[en]="Skipping .NET SDK installation/update."; S_DOTNET_SKIPPING_UPDATE[pl]="Pominięcie instalacji/aktualizacji .NET SDK."
+declare -A S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE; S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[en]="Automatic .NET SDK installation for this OS combination is not fully configured. Please try manual installation or the ARM32 script option if applicable."; S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[pl]="Automatyczna instalacja .NET SDK dla tej kombinacji systemu operacyjnego nie jest w pełni skonfigurowana. Spróbuj instalacji ręcznej lub opcji skryptu ARM32, jeśli dotyczy."
 declare -A S_COULD_NOT_DETERMINE_OS_VERSION_SKIP_DOTNET; S_COULD_NOT_DETERMINE_OS_VERSION_SKIP_DOTNET[en]="Could not determine OS version. Skipping .NET SDK installation."; S_COULD_NOT_DETERMINE_OS_VERSION_SKIP_DOTNET[pl]="Nie można określić wersji systemu. Pominięcie instalacji .NET SDK."
 declare -A S_DOTNET_MANUAL_INSTALL_NOTE; S_DOTNET_MANUAL_INSTALL_NOTE[en]="You might need to install it manually for your distribution."; S_DOTNET_MANUAL_INSTALL_NOTE[pl]="Może być konieczna ręczna instalacja dla Twojej dystrybucji."
-declare -A S_DOTNET_SKIPPING_UPDATE; S_DOTNET_SKIPPING_UPDATE[en]="Skipping .NET SDK installation/update."; S_DOTNET_SKIPPING_UPDATE[pl]="Pominięcie instalacji/aktualizacji .NET SDK."
-declare -A S_PREREQ_SKIPPING_ALL; S_PREREQ_SKIPPING_ALL[en]="Skipping prerequisite installation. Please ensure Git, lsb-release, rsync, libicu-dev, and .NET SDK %s are installed."; S_PREREQ_SKIPPING_ALL[pl]="Pominięcie instalacji wymagań wstępnych. Upewnij się, że Git, lsb-release, rsync, libicu-dev oraz .NET SDK %s są zainstalowane."
-declare -A S_PREREQ_ESSENTIAL_EXIT; S_PREREQ_ESSENTIAL_EXIT[en]="Prerequisites are essential. Exiting."; S_PREREQ_ESSENTIAL_EXIT[pl]="Wymagania wstępne są niezbędne. Zamykanie."
-declare -A S_UBUNTU_2004_EOL_WARNING; S_UBUNTU_2004_EOL_WARNING[en]="WARNING: Ubuntu 20.04 reaches its standard end-of-life in April 2025. Microsoft has stated that .NET 9 will NOT be supported on Ubuntu 20.04. You should upgrade your OS to a supported version (e.g., Ubuntu 22.04 or 24.04) to use .NET 9 and receive security updates."; S_UBUNTU_2004_EOL_WARNING[pl]="OSTRZEŻENIE: Standardowe wsparcie dla Ubuntu 20.04 kończy się w kwietniu 2025. Microsoft ogłosił, że .NET 9 NIE będzie wspierany na Ubuntu 20.04. Zalecana jest aktualizacja systemu operacyjnego do wspieranej wersji (np. Ubuntu 22.04 lub 24.04), aby móc korzystać z .NET 9 i otrzymywać aktualizacje bezpieczeństwa."
-declare -A S_DEBIAN_10_EOL_WARNING; S_DEBIAN_10_EOL_WARNING[en]="WARNING: Debian 10 (Buster) has reached its end-of-life (June 2024 for LTS). .NET 9 is NOT supported on Debian 10. You should upgrade your OS to a supported version (e.g., Debian 11 or 12) to use .NET 9 and receive security updates."; S_DEBIAN_10_EOL_WARNING[pl]="OSTRZEŻENIE: Debian 10 (Buster) osiągnął koniec wsparcia (czerwiec 2024 dla LTS). .NET 9 NIE jest wspierany na Debianie 10. Zalecana jest aktualizacja systemu operacyjnego do wspieranej wersji (np. Debian 11 lub 12), aby móc korzystać z .NET 9 i otrzymywać aktualizacje bezpieczeństwa."
-declare -A S_CONFIRM_DOTNET9_ON_UNSUPPORTED_OS; S_CONFIRM_DOTNET9_ON_UNSUPPORTED_OS[en]="Do you wish to attempt installing .NET 9.0 on this unsupported OS version despite the warning (this is highly likely to fail)?"; S_CONFIRM_DOTNET9_ON_UNSUPPORTED_OS[pl]="Czy chcesz spróbować zainstalować .NET 9.0 na tej niewspieranej wersji systemu pomimo ostrzeżenia (jest to wysoce prawdopodobne, że się nie uda)?"
-declare -A S_SKIPPING_DOTNET9_UNSUPPORTED_OS; S_SKIPPING_DOTNET9_UNSUPPORTED_OS[en]="Skipping .NET 9.0 installation due to OS limitations and user choice."; S_SKIPPING_DOTNET9_UNSUPPORTED_OS[pl]="Pominięcie instalacji .NET 9.0 z powodu ograniczeń systemu operacyjnego i wyboru użytkownika."
-declare -A S_USING_PPA_FOR_UBUNTU; S_USING_PPA_FOR_UBUNTU[en]="Using Ubuntu PPA method for .NET SDK installation on Ubuntu %s..."; S_USING_PPA_FOR_UBUNTU[pl]="Używanie metody PPA Ubuntu do instalacji .NET SDK na Ubuntu %s..."
-declare -A S_INSTALLING_SOFTWARE_PROPERTIES; S_INSTALLING_SOFTWARE_PROPERTIES[en]="Ensuring 'software-properties-common' is installed for PPA support..."; S_INSTALLING_SOFTWARE_PROPERTIES[pl]="Zapewnianie instalacji 'software-properties-common' dla obsługi PPA..."
-declare -A S_ADDING_PPA_DOTNET_BACKPORTS; S_ADDING_PPA_DOTNET_BACKPORTS[en]="Adding ppa:dotnet/backports repository..."; S_ADDING_PPA_DOTNET_BACKPORTS[pl]="Dodawanie repozytorium ppa:dotnet/backports..."
-declare -A S_DOTNET9_PPA_INSTALL_FAILED; S_DOTNET9_PPA_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from PPA. This might mean it's not yet available in backports for your Ubuntu version, or another issue occurred."; S_DOTNET9_PPA_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z PPA. Może to oznaczać, że nie jest jeszcze dostępny w backports dla Twojej wersji Ubuntu lub wystąpił inny problem."
-declare -A S_USING_MS_REPO_METHOD; S_USING_MS_REPO_METHOD[en]="Using Microsoft package repository method for .NET SDK installation..."; S_USING_MS_REPO_METHOD[pl]="Używanie metody repozytorium pakietów Microsoft do instalacji .NET SDK..."
-declare -A S_DOTNET9_MSREPO_INSTALL_FAILED; S_DOTNET9_MSREPO_INSTALL_FAILED[en]="Failed to install dotnet-sdk-%s from Microsoft repository. Please check .NET 9.0 availability for your OS."; S_DOTNET9_MSREPO_INSTALL_FAILED[pl]="Nie udało się zainstalować dotnet-sdk-%s z repozytorium Microsoft. Sprawdź dostępność .NET 9.0 dla swojego systemu."
-declare -A S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE; S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[en]="Automatic .NET SDK installation for this OS combination is not fully configured. Please try manual installation or the ARM32 script option if applicable."; S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[pl]="Automatyczna instalacja .NET SDK dla tej kombinacji systemu operacyjnego nie jest w pełni skonfigurowana. Spróbuj instalacji ręcznej lub opcji skryptu ARM32, jeśli dotyczy."
-declare -A S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT; S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[en]="dotnet command not found after installation attempt. .NET SDK installation likely failed."; S_DOTNET_CMD_NOT_FOUND_AFTER_ATTEMPT[pl]="Nie znaleziono polecenia dotnet po próbie instalacji. Instalacja .NET SDK prawdopodobnie nie powiodła się."
-declare -A S_ARCH_DETECTED; S_ARCH_DETECTED[en]="Detected system architecture: %s."; S_ARCH_DETECTED[pl]="Wykryta architektura systemu: %s."
-declare -A S_ARM32_DOTNET9_APT_UNAVAILABLE; S_ARM32_DOTNET9_APT_UNAVAILABLE[en]=".NET 9.0 SDK is typically not available via apt on 32-bit ARM systems (like older Raspberry Pis)."; S_ARM32_DOTNET9_APT_UNAVAILABLE[pl]=".NET 9.0 SDK zazwyczaj nie jest dostępny przez apt na systemach ARM 32-bitowych (jak starsze Raspberry Pi)."
-declare -A S_CONFIRM_ARM_INSTALLER_SCRIPT; S_CONFIRM_ARM_INSTALLER_SCRIPT[en]="An alternative installation script for ARM32 systems might work. Do you want to try using this script to install .NET 9.0 SDK?"; S_CONFIRM_ARM_INSTALLER_SCRIPT[pl]="Alternatywny skrypt instalacyjny dla systemów ARM32 może zadziałać. Czy chcesz spróbować użyć tego skryptu do instalacji .NET 9.0 SDK?"
-declare -A S_USING_ARM_INSTALLER_SCRIPT; S_USING_ARM_INSTALLER_SCRIPT[en]="Attempting to install .NET 9.0 SDK using the ARM32 installer script from %s..."; S_USING_ARM_INSTALLER_SCRIPT[pl]="Próba instalacji .NET 9.0 SDK za pomocą skryptu instalacyjnego ARM32 z %s..." # %s will be ARM32_DOTNET_INSTALLER_URL
-declare -A S_ARM_INSTALLER_SCRIPT_SUCCESS; S_ARM_INSTALLER_SCRIPT_SUCCESS[en]="ARM32 installer script executed. Please check its output for success. Will now verify 'dotnet' command."; S_ARM_INSTALLER_SCRIPT_SUCCESS[pl]="Skrypt instalacyjny ARM32 został wykonany. Sprawdź jego dane wyjściowe pod kątem powodzenia. Teraz zweryfikujemy polecenie 'dotnet'."
-declare -A S_ARM_INSTALLER_SCRIPT_FAIL; S_ARM_INSTALLER_SCRIPT_FAIL[en]="Execution of the ARM32 installer script failed or was skipped. .NET 9.0 SDK may not be installed."; S_ARM_INSTALLER_SCRIPT_FAIL[pl]="Wykonanie skryptu instalacyjnego ARM32 nie powiodło się lub zostało pominięte. .NET 9.0 SDK może nie być zainstalowany."
-declare -A S_SKIPPING_ARM_INSTALLER_SCRIPT; S_SKIPPING_ARM_INSTALLER_SCRIPT[en]="Skipping ARM32 installer script."; S_SKIPPING_ARM_INSTALLER_SCRIPT[pl]="Pominięcie skryptu instalacyjnego ARM32."
-declare -A S_DOTNET9_ALL_METHODS_FAILED; S_DOTNET9_ALL_METHODS_FAILED[en]="Failed to install .NET SDK %s using available methods for your system configuration. Please try manual installation. See: https://dotnet.microsoft.com/download/dotnet/9.0"; S_DOTNET9_ALL_METHODS_FAILED[pl]="Nie udało się zainstalować .NET SDK %s przy użyciu dostępnych metod dla Twojej konfiguracji systemu. Spróbuj instalacji ręcznej. Zobacz: https://dotnet.microsoft.com/download/dotnet/9.0"
-declare -A S_ICU_CHECK_WARN; S_ICU_CHECK_WARN[en]="ICU libraries might still be missing or not detected. 'dotnet --version' could fail. Consider installing 'libicu-dev'."; S_ICU_CHECK_WARN[pl]="Biblioteki ICU mogą nadal być brakujące lub niewykryte. Polecenie 'dotnet --version' może się nie udać. Rozważ instalację 'libicu-dev'."
-declare -A S_DOTNET_CMD_FUNCTIONAL; S_DOTNET_CMD_FUNCTIONAL[en]="'dotnet' command functional."; S_DOTNET_CMD_FUNCTIONAL[pl]="Polecenie 'dotnet' działa."
-declare -A S_DOTNET_WRONG_VERSION_WARN; S_DOTNET_WRONG_VERSION_WARN[en]="The installed 'dotnet' version is not %s. Compilation may fail or use an unexpected SDK."; S_DOTNET_WRONG_VERSION_WARN[pl]="Zainstalowana wersja 'dotnet' to nie %s. Kompilacja może się nie udać lub użyć nieoczekiwanego SDK."
-declare -A S_DOTNET_CORRECT_VERSION_OK; S_DOTNET_CORRECT_VERSION_OK[en]=".NET SDK %s seems to be correctly installed and active."; S_DOTNET_CORRECT_VERSION_OK[pl]=".NET SDK %s wydaje się być poprawnie zainstalowany i aktywny."
-declare -A S_DOTNET_VERSION_FAILED_BROKEN_ICU; S_DOTNET_VERSION_FAILED_BROKEN_ICU[en]="'dotnet --version' failed. The .NET installation is likely broken or missing dependencies (like ICU). Please resolve this manually."; S_DOTNET_VERSION_FAILED_BROKEN_ICU[pl]="Polecenie 'dotnet --version' nie powiodło się. Instalacja .NET jest prawdopodobnie uszkodzona lub brakuje zależności (np. ICU). Rozwiąż ten problem ręcznie."
 declare -A S_ENSURING_DOTNET_IN_PATH; S_ENSURING_DOTNET_IN_PATH[en]="Ensuring 'dotnet' command is available in PATH..."; S_ENSURING_DOTNET_IN_PATH[pl]="Zapewnianie dostępności polecenia 'dotnet' w PATH..."
 declare -A S_DOTNET_CMD_NOT_IN_PATH_WARN; S_DOTNET_CMD_NOT_IN_PATH_WARN[en]="'dotnet' command not found in current PATH. Attempting to locate..."; S_DOTNET_CMD_NOT_IN_PATH_WARN[pl]="Nie znaleziono polecenia 'dotnet' w bieżącym PATH. Próba zlokalizowania..."
 declare -A S_FOUND_DOTNET_AT_ADDING_TO_PATH; S_FOUND_DOTNET_AT_ADDING_TO_PATH[en]="Found dotnet at '%s'. Adding to PATH for this session."; S_FOUND_DOTNET_AT_ADDING_TO_PATH[pl]="Znaleziono dotnet w '%s'. Dodawanie do PATH dla tej sesji."
@@ -135,11 +134,15 @@ declare -A S_DOTNET_MANUAL_PATH_INSTRUCTION; S_DOTNET_MANUAL_PATH_INSTRUCTION[en
 declare -A S_DOTNET_CMD_NOW_IN_PATH; S_DOTNET_CMD_NOW_IN_PATH[en]="'dotnet' command is now available in PATH."; S_DOTNET_CMD_NOW_IN_PATH[pl]="Polecenie 'dotnet' jest teraz dostępne w PATH."
 declare -A S_DOTNET_CMD_PATH_ADD_FAILED; S_DOTNET_CMD_PATH_ADD_FAILED[en]="Failed to make 'dotnet' command available in PATH even after attempting to add it."; S_DOTNET_CMD_PATH_ADD_FAILED[pl]="Nie udało się udostępnić polecenia 'dotnet' w PATH nawet po próbie dodania."
 declare -A S_DOTNET_CMD_ALREADY_IN_PATH; S_DOTNET_CMD_ALREADY_IN_PATH[en]="'dotnet' command is already available in PATH."; S_DOTNET_CMD_ALREADY_IN_PATH[pl]="Polecenie 'dotnet' jest już dostępne w PATH."
-
 declare -A S_ESSENTIAL_TOOLS_VERIFY_UPDATE; S_ESSENTIAL_TOOLS_VERIFY_UPDATE[en]="[UPDATE MODE] Verifying essential tools for update..."; S_ESSENTIAL_TOOLS_VERIFY_UPDATE[pl]="[TRYB AKTUALIZACJI] Weryfikacja niezbędnych narzędzi do aktualizacji..."
 declare -A S_ESSENTIAL_TOOLS_MISSING_UPDATE_EXIT; S_ESSENTIAL_TOOLS_MISSING_UPDATE_EXIT[en]="[UPDATE MODE] Essential tools missing. Please run the installer interactively first to install prerequisites."; S_ESSENTIAL_TOOLS_MISSING_UPDATE_EXIT[pl]="[TRYB AKTUALIZACJI] Brakuje niezbędnych narzędzi. Uruchom najpierw instalator interaktywnie, aby zainstalować wymagania wstępne."
 declare -A S_ESSENTIAL_TOOLS_VERIFIED_UPDATE; S_ESSENTIAL_TOOLS_VERIFIED_UPDATE[en]="[UPDATE MODE] Essential tools verified."; S_ESSENTIAL_TOOLS_VERIFIED_UPDATE[pl]="[TRYB AKTUALIZACJI] Niezbędne narzędzia zweryfikowane."
-# ... (All other S_ variables for Steps 2-5 from previous full script) ...
+declare -A S_DETECTING_ARCHITECTURE; S_DETECTING_ARCHITECTURE[en]="Detecting system architecture..."; S_DETECTING_ARCHITECTURE[pl]="Wykrywanie architektury systemu..."
+declare -A S_ARM32_PERFORMANCE_NOTE; S_ARM32_PERFORMANCE_NOTE[en]="Compiling for 32-bit ARM. Note: .NET SDK for ARM32 must be installed (e.g., via the ARM32 installer script option if apt methods failed)."; S_ARM32_PERFORMANCE_NOTE[pl]="Kompilacja dla ARM 32-bit. Uwaga: .NET SDK dla ARM32 musi być zainstalowany (np. przez opcję skryptu instalacyjnego ARM32, jeśli metody apt zawiodły)."
+declare -A S_UNKNOWN_ARCH_DEFAULTING_X64; S_UNKNOWN_ARCH_DEFAULTING_X64[en]="Unknown architecture '%s'. Defaulting to RID '%s'. This might cause 'Exec format error' if incorrect."; S_UNKNOWN_ARCH_DEFAULTING_X64[pl]="Nieznana architektura '%s'. Używanie domyślnego RID '%s'. Może to spowodować 'Exec format error', jeśli jest nieprawidłowy."
+declare -A S_USING_DOTNET_RID; S_USING_DOTNET_RID[en]="Using .NET Runtime Identifier (RID) for publishing: %s"; S_USING_DOTNET_RID[pl]="Używanie identyfikatora środowiska uruchomieniowego .NET (RID) do publikacji: %s"
+# ... (All other S_ variables from previous script for Steps 2-5)
+
 
 # --- Configuration Variables ---
 DEFAULT_CLONE_DIR="$HOME/GbbConnect2_build"
@@ -154,7 +157,6 @@ ARM32_DOTNET_INSTALLER_URL="https://raw.githubusercontent.com/Sp3nge/GbbConnect2
 
 
 # --- Helper Functions ---
-# (Helper functions: print_info, print_success, print_warning, print_error, confirm_action, prompt_with_default, prompt_for_value - same as before, with SILENT_UPDATE_MODE checks)
 print_info() {
     if [ "$SILENT_UPDATE_MODE" = true ]; then return; fi 
     echo -e "\n\033[1;34m${S_INFO_PREFIX[$LANG_SELECTED]}\033[0m $1"
@@ -176,11 +178,7 @@ confirm_action() {
     local prompt_text="$1"
     if [ "$SILENT_UPDATE_MODE" = true ]; then
         if [[ "$prompt_text" == *"${S_CONFIRM_CLEAN_BUILD_ARTIFACTS[$LANG_SELECTED]}"* ]]; then return 0; fi
-        if [[ "$prompt_text" == *"${S_CONFIRM_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}"* ]]; then return 0; fi # Auto-yes to ARM script in silent update
-        # For other confirmations in silent mode, if they are hit, it's likely an unexpected state.
-        # Defaulting to 'yes' might be risky. It's better if silent mode logic avoids generic confirms.
-        # For now, if one is hit, assume yes to proceed, but this indicates a logic path to review.
-        # print_warning "[SILENT UPDATE] Auto-confirming 'yes' for unexpected prompt: $prompt_text"
+        if [[ "$prompt_text" == *"${S_CONFIRM_ARM_INSTALLER_SCRIPT[$LANG_SELECTED]}"* ]]; then return 0; fi 
         return 0 
     fi
     while true; do
@@ -205,7 +203,7 @@ prompt_with_default() {
 prompt_for_value() {
     local prompt_message="$1"; local variable_name="$2"; local input_value
     if [ "$SILENT_UPDATE_MODE" = true ]; then
-        L_SILENT_PROMPT_ERROR_MSG_FORMATTED=$(printf "Attempted to prompt for mandatory value in SILENT mode: %s. This usually means Parameters.xml is missing and cannot be configured non-interactively." "$prompt_message")
+        L_SILENT_PROMPT_ERROR_MSG_FORMATTED=$(printf "Attempted to prompt for mandatory value in SILENT mode: %s. This usually means Parameters.xml is missing and cannot be configured non-interactively." "$prompt_message") 
         print_error "$L_SILENT_PROMPT_ERROR_MSG_FORMATTED" 
         exit 1 
     fi
@@ -322,7 +320,7 @@ if [ "$INTERACTIVE_MODE" = true ]; then
                             sudo dpkg -i packages-microsoft-prod.deb; rm packages-microsoft-prod.deb; sudo apt update; sudo apt install -y apt-transport-https; sudo apt update 
                             if ! sudo apt install -y "dotnet-sdk-${DEFAULT_DOTNET_SDK_VERSION}"; then L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED=$(printf "${S_DOTNET9_MSREPO_INSTALL_FAILED[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION"); print_warning "$L_DOTNET9_MSREPO_INSTALL_FAILED_FORMATTED"; else L_DOTNET_INSTALL_COMPLETE_FORMATTED=$(printf "${S_DOTNET_INSTALL_COMPLETE[$LANG_SELECTED]}" "$DEFAULT_DOTNET_SDK_VERSION"); print_success "$L_DOTNET_INSTALL_COMPLETE_FORMATTED"; DOTNET_INSTALL_SUCCESSFUL=true; fi
                         else print_error "${S_DOWNLOAD_PKG_FAIL[$LANG_SELECTED]}"; print_warning "${S_DOTNET_SKIPPING_INSTALL[$LANG_SELECTED]}"; fi
-                    elif [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ] && ! ( [[ "$ARCH" == "armv7l" || "$ARCH" == "armhf" ]] ) ; then # If not ARM32 and other methods didn't apply
+                    elif [ "$ATTEMPT_DOTNET_INSTALL_FLAG" = true ] && ! ( [[ "$ARCH" == "armv7l" || "$ARCH" == "armhf" ]] ) ; then 
                         print_warning "${S_DOTNET_AUTO_INSTALL_FAIL_MANUAL_NOTE[$LANG_SELECTED]}"
                     fi
 
@@ -340,7 +338,6 @@ if [ "$INTERACTIVE_MODE" = true ]; then
                     fi
                 fi 
                 
-                # Final verification block after all install attempts
                 if [ "$DOTNET_INSTALL_SUCCESSFUL" = true ]; then
                     print_info "${S_DOTNET_VERIFYING_INSTALL[$LANG_SELECTED]}"
                     if [ -f /etc/profile ]; then . /etc/profile; fi; if [ -f "$HOME/.bashrc" ]; then . "$HOME/.bashrc"; fi; if [ -f "$HOME/.profile" ]; then . "$HOME/.profile"; fi
@@ -383,7 +380,7 @@ fi
 print_info "${S_ENSURING_DOTNET_IN_PATH[$LANG_SELECTED]}"
 if ! command -v dotnet &> /dev/null; then
     print_warning "${S_DOTNET_CMD_NOT_IN_PATH_WARN[$LANG_SELECTED]}"
-    DOTNET_PATHS=( "/usr/share/dotnet" "/usr/local/share/dotnet" "$HOME/dotnet" "/opt/dotnet" "/usr/bin" ) # Added /usr/bin as some installers symlink there
+    DOTNET_PATHS=( "/usr/share/dotnet" "/usr/local/share/dotnet" "$HOME/dotnet" "/opt/dotnet" "/usr/bin" ) 
     FOUND_DOTNET_IN_COMMON_PATHS=false
     for p in "${DOTNET_PATHS[@]}"; do
         if [ -x "${p}/dotnet" ]; then
@@ -406,13 +403,12 @@ fi
 echo "---"
 
 # --- Determine Target Runtime for Publishing ---
-# This block is new and placed before compilation
 print_info "${S_DETECTING_ARCHITECTURE[$LANG_SELECTED]}"
 MACHINE_ARCH=$(uname -m)
-L_ARCH_DETECTED_MSG_FORMATTED_COMPILE=$(printf "${S_ARCH_DETECTED[$LANG_SELECTED]}" "$MACHINE_ARCH") # Use a different temp var name
+L_ARCH_DETECTED_MSG_FORMATTED_COMPILE=$(printf "${S_ARCH_DETECTED[$LANG_SELECTED]}" "$MACHINE_ARCH")
 print_info "$L_ARCH_DETECTED_MSG_FORMATTED_COMPILE"
 
-TARGET_RUNTIME_FOR_PUBLISH="" # Use a specific variable for publish RID
+TARGET_RUNTIME_FOR_PUBLISH="" 
 case "$MACHINE_ARCH" in
     "x86_64" | "amd64")
         TARGET_RUNTIME_FOR_PUBLISH="linux-x64" ;;
@@ -433,7 +429,7 @@ echo "---"
 # --- Continuation of Script: Part 2 ---
 
 # --- 2. Clone Repository ---
-# (This section remains the same as the last complete script you approved)
+# (This section has been reviewed and should be okay from previous versions)
 print_info "${S_STEP2_TITLE[$LANG_SELECTED]}"
 GITHUB_REPO="https://github.com/gbbsoft/GbbConnect2.git" 
 
@@ -529,8 +525,8 @@ if [ "$UPDATE_MODE" = true ] || confirm_action "$L_CONFIRM_CLEAN_BUILD_ARTIFACTS
     print_info "${S_CLEANING_BUILD_ARTIFACTS[$LANG_SELECTED]}"; rm -rf ./bin ./obj "./${PUBLISH_OUTPUT_DIR_NAME}"
 fi
 
-L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED=$(printf "${S_PUBLISHING_APP_FOR_RUNTIME[$LANG_SELECTED]}" "$TARGET_RUNTIME_FOR_PUBLISH"); print_info "$L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED" # Use TARGET_RUNTIME_FOR_PUBLISH
-if dotnet publish -c Release -r "${TARGET_RUNTIME_FOR_PUBLISH}" --self-contained true -o "./${PUBLISH_OUTPUT_DIR_NAME}" /p:PublishSingleFile=true; then # Use TARGET_RUNTIME_FOR_PUBLISH
+L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED=$(printf "${S_PUBLISHING_APP_FOR_RUNTIME[$LANG_SELECTED]}" "$TARGET_RUNTIME_FOR_PUBLISH"); print_info "$L_PUBLISHING_APP_FOR_RUNTIME_FORMATTED"
+if dotnet publish -c Release -r "${TARGET_RUNTIME_FOR_PUBLISH}" --self-contained true -o "./${PUBLISH_OUTPUT_DIR_NAME}" /p:PublishSingleFile=true; then
     L_APP_PUBLISHED_TO_FORMATTED=$(printf "${S_APP_PUBLISHED_TO[$LANG_SELECTED]}" "$PUBLISHED_ARTIFACTS_PATH"); print_success "$L_APP_PUBLISHED_TO_FORMATTED"
 else print_error "${S_DOTNET_PUBLISH_FAILED[$LANG_SELECTED]}"; exit 1; fi
 cd - > /dev/null
@@ -679,7 +675,6 @@ if [ "$INTERACTIVE_MODE" = true ]; then
     echo "${S_TO_MANAGE_SERVICE[$LANG_SELECTED]}"
     echo "  ${S_SERVICE_STOP[$LANG_SELECTED]}:    sudo systemctl stop ${APP_NAME}.service"; echo "  ${S_SERVICE_START[$LANG_SELECTED]}:   sudo systemctl start ${APP_NAME}.service"
     echo "  ${S_SERVICE_RESTART[$LANG_SELECTED]}: sudo systemctl restart ${APP_NAME}.service"; echo "  ${S_SERVICE_DISABLE_AUTOSTART[$LANG_SELECTED]}: sudo systemctl disable ${APP_NAME}.service"; echo ""
-    # Removed the cron setup offering from here
     echo "---" 
 fi
 
@@ -687,7 +682,7 @@ if [ "$UPDATE_MODE" = true ]; then
     if [ "$SILENT_UPDATE_MODE" = false ]; then 
         L_UPDATE_SERVICE_ACTIVE_FORMATTED=$(printf "${S_UPDATE_SERVICE_ACTIVE[$LANG_SELECTED]}" "$APP_NAME")
         L_UPDATE_SERVICE_NOT_ACTIVE_FORMATTED=$(printf "${S_UPDATE_SERVICE_NOT_ACTIVE[$LANG_SELECTED]}" "$APP_NAME" "$APP_NAME")
-        L_VERIFYING_UPDATE_MSG_FORMATTED=$(printf "${S_INFO_PREFIX[$LANG_SELECTED]} Verifying service status after update...") # Using direct string for now
+        L_VERIFYING_UPDATE_MSG_FORMATTED=$(printf "${S_INFO_PREFIX[$LANG_SELECTED]} Verifying service status after update...") 
         echo -e "\n$L_VERIFYING_UPDATE_MSG_FORMATTED"
 
         if sudo systemctl is-active --quiet "${APP_NAME}.service"; then print_success "$L_UPDATE_SERVICE_ACTIVE_FORMATTED"; else print_error "$L_UPDATE_SERVICE_NOT_ACTIVE_FORMATTED"; fi
@@ -695,9 +690,6 @@ if [ "$UPDATE_MODE" = true ]; then
 fi
 
 if [ "$SILENT_UPDATE_MODE" = true ]; then
-    # In silent mode, final success is usually logged by the calling script (e.g. cron checker)
-    # This script might log to its own silent update log if configured.
-    # For now, print_success here will be suppressed by its own internal check.
     print_success "${S_UPDATE_SILENT_FINISHED[$LANG_SELECTED]}" 
 elif [ "$UPDATE_MODE" = true ]; then
     print_success "${S_UPDATE_USER_TRIGGERED_FINISHED[$LANG_SELECTED]}"
