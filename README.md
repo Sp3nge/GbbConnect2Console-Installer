@@ -69,7 +69,7 @@ This Bash script (`script.sh`) automates the installation, configuration, and up
 1.  **Download the Script:**
     Save the script content to a file, for example, `script.sh`.
     ```bash
-    wget -O script.sh <RAW_URL_TO_YOUR_SCRIPT_ON_GITHUB>
+    wget -O script.sh https://raw.githubusercontent.com/Sp3nge/GbbConnect2Console-Installer/refs/heads/main/script.sh
     ```
 
 2.  **Make it Executable:**
@@ -191,7 +191,7 @@ If you find issues with this installer script (`script.sh`) or have suggestions 
 1.  **Pobierz Skrypt:**
     Zapisz zawartość skryptu do pliku, np. `script.sh`.
     ```bash
-    wget -O script.sh <RAW_URL_TWOJEGO_SKRYPTU_NA_GITHUB>
+    wget -O script.sh https://raw.githubusercontent.com/Sp3nge/GbbConnect2Console-Installer/refs/heads/main/script.sh
     ```
 
 2.  **Nadaj Prawa do Wykonania:**
